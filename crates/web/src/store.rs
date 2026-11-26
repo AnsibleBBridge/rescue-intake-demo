@@ -99,6 +99,15 @@ impl AppState {
         Ok(())
     }
 
+    /// Replace the rescue branding and save. Same persist-clone-first rule as `upsert`.
+    pub fn save_settings(&self, s: Settings) -> Result<(), String> {
+        let mut next = self.data.get_untracked();
+        next.settings = s;
+        self.store.get_value().save(&next)?;
+        self.data.set(next);
+        Ok(())
+    }
+
     /// Restore the sample data (also clears any corrupt blob) and the notice.
     pub fn reset(&self) {
         self.data.set(fresh_samples());

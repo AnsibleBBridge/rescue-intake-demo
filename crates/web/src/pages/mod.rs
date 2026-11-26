@@ -3,11 +3,18 @@ pub mod intake;
 pub mod posts;
 pub mod profile;
 pub mod roster;
+pub mod settings;
 
-use crate::app::Route;
+use crate::app::{href, Route};
 use leptos::prelude::*;
 
-/// Placeholder for routes later tasks will build.
-pub fn coming_soon(r: Route) -> impl IntoView {
-    view! { <section class="card"><h1>"Coming soon"</h1><p>{format!("{r:?}")}</p></section> }
+/// Shown for any hash that matches no route.
+pub fn not_found() -> impl IntoView {
+    view! {
+        <section class="card">
+            <h1>"Page not found"</h1>
+            <p>"That address doesn't match anything here."</p>
+            <a class="btn primary" href=href(&Route::Roster)>"Back to the roster"</a>
+        </section>
+    }
 }
