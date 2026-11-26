@@ -161,6 +161,9 @@ pub struct Story {
     pub birth_date: Option<NaiveDate>,
     pub color_markings: Option<String>,
     pub weight_lbs: Option<f32>,
+    /// Free text like "about 50 lbs grown"; older saved data lacks it.
+    #[serde(default)]
+    pub size_potential: Option<String>,
     pub altered: YesNoUnknown,
     pub good_with_dogs: YesNoUnknown,
     pub good_with_cats: YesNoUnknown,

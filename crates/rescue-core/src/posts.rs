@@ -83,6 +83,9 @@ pub fn fact_lines(animal: &Animal) -> Vec<(&'static str, String)> {
     if let Some(w) = s.weight_lbs {
         out.push(("Weight", format!("{} lbs", w.round() as i64)));
     }
+    if let Some(sp) = text(&s.size_potential) {
+        out.push(("Size potential", sp.to_string()));
+    }
     let yn = |v: YesNoUnknown| match v {
         YesNoUnknown::Yes => Some("Yes".to_string()),
         YesNoUnknown::No => Some("No".to_string()),
@@ -323,5 +326,14 @@ mod tests {
         assert!(f.contains(&("Good with", "dogs, kids".to_string())));
         assert!(f.contains(&("Spayed/neutered", "Yes".to_string())));
         assert!(f.contains(&("Age", "~2 years".to_string())));
+    }
+
+    #[test]
+    fn fact_lines_include_size_potential_when_not_blank() {
+        let mut a = animal(Sex::Male);
+        a.story.size_potential = Some("   ".into());
+        assert!(fact_lines(&a).iter().all(|(l, _)| *l != "Size potential"));
+        a.story.size_potential = Some("about 50 lbs grown".into());
+        assert!(fact_lines(&a).contains(&("Size potential", "about 50 lbs grown".to_string())));
     }
 }
