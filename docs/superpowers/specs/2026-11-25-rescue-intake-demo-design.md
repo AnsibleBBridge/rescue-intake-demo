@@ -163,3 +163,38 @@ their acquisition/disposition records) and PDF reports / printable records (e.g.
 record covering 010.04A, 010.06, 010.05A — the paperwork an NDA inspector would ask for — and
 roster/period reports). Design implication for now: keep all record data structured in
 `rescue-core` (no free-text blobs) so export functions are pure Rust over `StoreData`.
+
+---
+
+## v2 — Farm animals (approved 2026-11-25)
+
+**Why:** first feedback from the rescue: "I only take in farm animals — rabbits, chickens, ducks,
+geese, guinea pigs, horses, donkeys, goats/sheep… I try not to take cats and dogs but sometimes
+end up with them." The 23 NAC 18 dog/cat law therefore applies only to the occasional dog or cat.
+
+**Legal picture (research 2026-11-25; demo-only, not legal advice):** no Nebraska licensing law for
+farm-animal sanctuaries was found. Requirements are per-species and event-driven:
+- Sheep & goats: official scrapie ID required on change of ownership; buyer/seller record ID,
+  count, date (NDA Sheep and Goat Identification Requirements; 9 CFR 79).
+- Horses & donkeys entering Nebraska: negative EIA (Coggins) test within 12 months (NDA import
+  requirements). In-state Coggins rule not confirmed → "good practice".
+- Any animal entering Nebraska: certificate of veterinary inspection (CVI) (NDA import requirements).
+- Proof of ownership / bill of sale on transfer (Nebraska Brand Committee; mainly cattle/horses).
+- Rabbits, guinea pigs, poultry: nothing specific for a non-selling rescue found.
+
+**Decisions (Bryan + rescue):** singles only now; groups/flocks later.
+
+- Species: Horse, Donkey, Goat, Sheep, Chicken, Duck, Goose, Rabbit, Guinea pig, Dog, Cat, Other
+  (free-text kind). Old stored Dog/Cat data must still load.
+- Checklist becomes "Records & reminders": per-species items, each citing its source. Only dog/cat
+  items keep the 23 NAC 18 48-hour clock; others are reminders without deadlines.
+- Per-species fields (shown only when relevant): Horse/Donkey: height (hands), rideable/leads,
+  Coggins (date, lab, result). Goat/Sheep: scrapie tag #, horned/polled/disbudded. Poultry: layer.
+  Rabbit/Guinea pig: indoor/outdoor. Dog/Cat (and rabbit): house-trained. Everyone: good with kids,
+  dogs, cats, other animals. Outcome: bill of sale / adoption contract reference.
+- Fact sheet & posts: species-aware wording ("this sweet donkey"); default hashtags
+  `#FarmAnimalRescue #AdoptDontShop #NebraskaRescue`.
+- Samples: Clover (goat, Available, complete), Jasper (donkey, Vet check, missing Coggins &
+  ownership paperwork), Puddles (duck, Outcome/Adopted).
+
+**Later:** groups/flocks — group intake ("6 hens"), split a group, one fact sheet per bonded pair.
