@@ -54,7 +54,7 @@ const KINDS: [(HealthKind, &str); 5] = [
 ];
 
 #[component]
-fn Text(
+pub fn Text(
     label: &'static str,
     value: RwSignal<String>,
     #[prop(optional)] placeholder: &'static str,
@@ -69,7 +69,7 @@ fn Text(
 }
 
 #[component]
-fn Area(label: &'static str, value: RwSignal<String>, #[prop(optional)] placeholder: &'static str) -> impl IntoView {
+pub fn Area(label: &'static str, value: RwSignal<String>, #[prop(optional)] placeholder: &'static str) -> impl IntoView {
     view! {
         <label class="field"><span class="lbl">{label}</span>
             <textarea rows="3" placeholder=placeholder prop:value=move || value.get()

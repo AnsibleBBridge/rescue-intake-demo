@@ -79,3 +79,23 @@ h2 { font-size: 1.1rem; margin: 8px 0 0; }
 .preview { display: grid; gap: 8px; justify-items: start; }
 .preview img { max-width: 100%; max-height: 260px; border-radius: 12px; }
 .btn.wide { width: 100%; }
+
+/* Profile */
+.profile-head { margin-bottom: 16px; }
+.profile-head .hero { max-height: 320px; margin-bottom: 12px; }
+.stepper { margin-bottom: 0; }
+.b-outcome { background: var(--band-ink); color: #fff; }
+.profile-head + *, .card + .card, .card + .chips, .chips + .card, .notice + .card { margin-top: 16px; }
+.ci-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ci { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--bg); }
+.ci.overdue { background: var(--warn); color: var(--warn-ink); }
+.ci.done { background: var(--ok); color: var(--ok-ink); }
+.ci-body { display: grid; min-width: 0; }
+.ci-label { font-weight: 600; }
+.ci-due { font-size: .9rem; }
+.ci-cite { font-size: .8rem; opacity: .75; overflow-wrap: anywhere; }
+.details { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; }
+.details dt { font-weight: 600; font-size: .85rem; color: var(--muted); margin-top: 8px; }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+.plain { padding-left: 18px; margin: 4px 0 0; }
+.card .form.card { box-shadow: none; padding: 0; }

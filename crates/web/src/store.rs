@@ -86,13 +86,17 @@ impl AppState {
         self.data.with_untracked(|d| store.save(d))
     }
 
-    /// Insert or replace by id, then save. Used by the intake form.
+    /// Insert or replace by id, then save. Persists a clone first and only publishes it to
+    /// the signal on success, so a failed save never leaves memory ahead of storage.
     pub fn upsert(&self, a: Animal) -> Result<(), String> {
-        self.data.update(|d| match d.animals.iter_mut().find(|x| x.id == a.id) {
+        let mut next = self.data.get_untracked();
+        match next.animals.iter_mut().find(|x| x.id == a.id) {
             Some(slot) => *slot = a,
-            None => d.animals.push(a),
-        });
-        self.persist()
+            None => next.animals.push(a),
+        }
+        self.store.get_value().save(&next)?;
+        self.data.set(next);
+        Ok(())
     }
 
     /// Restore the sample data (also clears any corrupt blob) and the notice.

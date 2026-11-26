@@ -69,6 +69,7 @@ pub fn App() -> impl IntoView {
             {move || match route.get() {
                 Route::Roster => pages::roster::Roster().into_any(),
                 Route::New => pages::intake::Intake().into_any(),
+                Route::Animal(id) => pages::profile::Profile(pages::profile::ProfileProps { id }).into_any(),
                 other => pages::coming_soon(other).into_any(),
             }}
         </main>

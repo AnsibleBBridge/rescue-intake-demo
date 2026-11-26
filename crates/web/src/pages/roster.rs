@@ -34,7 +34,7 @@ impl Filter {
     }
 }
 
-fn status_class(s: Status) -> &'static str {
+pub fn status_class(s: Status) -> &'static str {
     match s {
         Status::Intake => "badge b-intake",
         Status::VetCheck => "badge b-vet",
