@@ -99,7 +99,10 @@ impl AppState {
     /// Restore the sample data (also clears any corrupt blob) and the notice.
     pub fn reset(&self) {
         self.data.set(fresh_samples());
-        self.notice.set(None);
-        let _ = self.persist();
+        // Never silent: if the save fails, tell the user the reset won't survive a reload.
+        match self.persist() {
+            Ok(()) => self.notice.set(None),
+            Err(e) => self.notice.set(Some(format!("Couldn't save the reset demo data: {e}"))),
+        }
     }
 }

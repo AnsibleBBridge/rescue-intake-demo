@@ -65,3 +65,15 @@ test('no horizontal scroll at 375px', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(overflow).toBe(false);
 });
+
+test('Reset demo surfaces a save error when storage throws', async ({ page }) => {
+  await page.addInitScript(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException('quota', 'QuotaExceededError');
+    };
+  });
+  await page.reload();
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await expect(page.getByText("Couldn't save the reset demo data")).toBeVisible();
+});
