@@ -109,6 +109,14 @@ Roster (home) ─▶ New intake (form) ─▶ Animal profile ─┬─▶ Fact s
    buttons to Fact sheet and Social posts.
 4. **Fact sheet** — clean one-page layout (photo, name, key facts, personality, fee,
    rescue contact). Print stylesheet hides app chrome.
+   **Reference (Bryan, 2026-11-25, Pinterest/Canva "Pet Profile" template):** keep this
+   structure in our own styling (not a copy of the template's art): title band
+   ("Meet <Name>" / Pet Profile) → **Overview** card (Breed, Sex, Age, Weight, Color, Size
+   potential) beside a **large circular photo** with the name on a ribbon/banner below it →
+   **Background** card (personality paragraph; good-with notes) → full-width **footer band**
+   "Interested in adopting? Call/Email …" from Settings. Soft pastel palette, rounded cards.
+   **No "Fun Facts" section** (crossed out on the reference). Adds `Story.size_potential:
+   Option<String>` (e.g. "about 10 lbs grown").
 5. **Social posts** — 2–3 tone variants (e.g. upbeat, heartfelt, short), each with a copy
    button and hashtags; a square share image drawn on a canvas, downloadable as PNG.
 
