@@ -252,6 +252,7 @@ pub fn AnimalForm(
     view! {
         <form class="form" on:submit=on_submit novalidate>
             <p class="note">"Only name, species and date received are required now — Nebraska gives you 48 hours to complete the rest (23 NAC 18-010.04A)."</p>
+            <p class="note">"This is a demo \u{2014} please use made-up names, addresses and license numbers."</p>
 
             <section class="card">
                 <h2>"Animal"</h2>
@@ -320,7 +321,14 @@ pub fn AnimalForm(
                         <Text label="Driver's license #" value=p_dl />
                     }.into_any()
                 }}
-                <Hint section="23 NAC 18-010.04A(3)" text="Nebraska requires the name, full mailing address and driver's license number of the person you received the animal from." />
+                {move || {
+                    let text = if is_agency.get() {
+                        "Nebraska requires the agency's name, the official's title and its mailing address (23 NAC 18-010.04A(3))."
+                    } else {
+                        "Nebraska requires the name, full mailing address and driver's license number of the person you received the animal from."
+                    };
+                    view! { <Hint section="23 NAC 18-010.04A(3)" text=text /> }
+                }}
                 <label class="check">
                     <input type="checkbox" prop:checked=move || out_of_state.get()
                         on:change=move |ev| out_of_state.set(event_target_checked(&ev)) />

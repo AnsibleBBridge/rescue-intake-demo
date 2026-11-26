@@ -8,6 +8,8 @@ A small demo for a Nebraska animal rescue: log an animal at intake, see its prof
 
 **Demo only, not legal advice.** The checklist follows the Nebraska Department of Agriculture's Commercial Dog & Cat Operator Inspection Regulations (23 NAC 18, effective 2016-02-17): https://nda.nebraska.gov/sites/default/files/regulations/animal/CommercialDogCatOperatorInspRegulations.pdf. Confirm current requirements with the Department.
 
+**Use made-up data.** This is a demo that runs on a shared web address, so please enter made-up names, addresses and license numbers rather than real ones.
+
 ## Run it locally
 
 ```sh

@@ -98,7 +98,10 @@ fn draw(ctx: &CanvasRenderingContext2d, a: &Animal, s: &Settings, photo: Option<
     ctx.fill_rect(0.0, 0.0, w, 170.0);
     ctx.set_fill_style_str("#fff");
     centered(ctx, "ADOPT ME", "800", 84.0, 900.0, 105.0)?;
-    centered(ctx, s.rescue_name.trim(), "600", 36.0, 900.0, 152.0)?;
+    // Skip the subtitle entirely when there is no rescue name (no empty text in the band).
+    if !s.rescue_name.trim().is_empty() {
+        centered(ctx, s.rescue_name.trim(), "600", 36.0, 900.0, 152.0)?;
+    }
 
     // White ring + clipped photo
     ctx.begin_path();
@@ -167,11 +170,17 @@ fn draw(ctx: &CanvasRenderingContext2d, a: &Animal, s: &Settings, photo: Option<
     ctx.set_fill_style_str("#fff");
     // Rescue name, then phone (falling back to email; blank contact parts are skipped).
     let contact = if s.phone.trim().is_empty() { s.email.trim() } else { s.phone.trim() };
+    let name = s.rescue_name.trim();
     if contact.is_empty() {
-        centered(ctx, s.rescue_name.trim(), "700", 44.0, 960.0, 1034.0)?;
+        // Name and phone/email all blank: a generic call to action fills the band.
+        centered(ctx, if name.is_empty() { "Adopt, don't shop" } else { name }, "700", 44.0, 960.0, 1034.0)?;
     } else {
-        centered(ctx, s.rescue_name.trim(), "700", 34.0, 960.0, 1008.0)?;
-        centered(ctx, contact, "700", 42.0, 960.0, 1056.0)?;
+        if name.is_empty() {
+            centered(ctx, contact, "700", 44.0, 960.0, 1034.0)?;
+        } else {
+            centered(ctx, name, "700", 34.0, 960.0, 1008.0)?;
+            centered(ctx, contact, "700", 42.0, 960.0, 1056.0)?;
+        }
     }
     Ok(())
 }

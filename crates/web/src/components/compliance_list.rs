@@ -8,6 +8,7 @@ pub fn format_due(state: &ItemState, now: NaiveDateTime) -> String {
     match state {
         ItemState::Done => "Done".into(),
         ItemState::NotApplicable => String::new(),
+        ItemState::Reminder => "Add when vaccinated".into(),
         ItemState::Open { due } => {
             let mins = (*due - now).num_minutes();
             if mins < 60 { "due in <1h".into() } else { format!("due in {}h", (mins + 59) / 60) }
@@ -34,6 +35,7 @@ pub fn ComplianceList(items: Vec<ComplianceItem>, now: NaiveDateTime) -> impl In
             let (icon, class) = match i.state {
                 ItemState::Done => ("\u{2705}", "ci done"),
                 ItemState::Overdue { .. } => ("\u{1F534}", "ci overdue"),
+                ItemState::Reminder => ("\u{2139}\u{FE0F}", "ci reminder"),
                 _ => ("\u{23F3}", "ci open"),
             };
             view! {
@@ -89,5 +91,6 @@ mod tests {
     fn done_and_na() {
         assert_eq!(format_due(&ItemState::Done, now()), "Done");
         assert_eq!(format_due(&ItemState::NotApplicable, now()), "");
+        assert!(format_due(&ItemState::Reminder, now()).contains("Add when vaccinated"));
     }
 }

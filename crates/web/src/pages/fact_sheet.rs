@@ -19,6 +19,8 @@ fn overview_rows(a: &Animal) -> Vec<(&'static str, String)> {
 struct Background {
     personality: Option<String>,
     good_with: Option<String>,
+    /// "Spayed/neutered: Yes" and "House-trained: No" lines; Unknown is omitted by fact_lines.
+    care: Vec<String>,
     special_needs: Option<String>,
     fee: Option<String>,
 }
@@ -27,7 +29,13 @@ fn background(a: &Animal) -> Background {
     let s = &a.story;
     let clean = |o: &Option<String>| o.as_ref().map(|t| t.trim().to_string()).filter(|t| !t.is_empty());
     let good = fact_lines(a).into_iter().find(|(k, _)| *k == "Good with").map(|(_, v)| format!("Good with: {v}"));
+    let lines = fact_lines(a);
+    let care = ["Spayed/neutered", "House-trained"]
+        .into_iter()
+        .filter_map(|l| lines.iter().find(|(k, _)| *k == l).map(|(k, v)| format!("{k}: {v}")))
+        .collect();
     Background {
+        care,
         personality: clean(&s.personality),
         good_with: good,
         special_needs: clean(&s.special_needs).map(|t| format!("Special needs: {t}")),
@@ -39,7 +47,12 @@ fn background(a: &Animal) -> Background {
 pub fn contact_text(s: &Settings) -> String {
     let parts: Vec<&str> = [s.phone.trim(), s.email.trim()].into_iter().filter(|p| !p.is_empty()).collect();
     if parts.is_empty() {
-        format!("Interested in adopting? Contact {}", s.rescue_name)
+        let name = s.rescue_name.trim();
+        if name.is_empty() {
+            "Interested in adopting? Contact us!".to_string()
+        } else {
+            format!("Interested in adopting? Contact {name}")
+        }
     } else {
         let mut it = parts.into_iter();
         let phone_first = !s.phone.trim().is_empty();
@@ -94,7 +107,7 @@ pub fn FactSheet(id: String) -> impl IntoView {
                 let settings = state.data.with(|d| d.settings.clone());
                 let rows = overview_rows(&a);
                 let bg = background(&a);
-                let bg_empty = bg.personality.is_none() && bg.good_with.is_none() && bg.special_needs.is_none() && bg.fee.is_none();
+                let bg_empty = bg.personality.is_none() && bg.good_with.is_none() && bg.care.is_empty() && bg.special_needs.is_none() && bg.fee.is_none();
                 let photo = match a.photo.clone() {
                     Some(src) => view! { <img src=src alt=format!("Photo of {}", a.name) /> }.into_any(),
                     None => view! { <div class="sheet-ph">{silhouette(a.species)}</div> }.into_any(),
@@ -133,6 +146,7 @@ pub fn FactSheet(id: String) -> impl IntoView {
                             <h2>"Background"</h2>
                             {bg.personality.map(|t| view! { <p>{t}</p> })}
                             {bg.good_with.map(|t| view! { <p>{t}</p> })}
+                            {bg.care.into_iter().map(|t| view! { <p>{t}</p> }).collect_view()}
                             {bg.special_needs.map(|t| view! { <p>{t}</p> })}
                             {bg.fee.map(|t| view! { <p class="fee">{t}</p> })}
                             {bg_empty.then(|| view! { <p>{format!("Ask us about {}!", a.name)}</p> })}
@@ -153,6 +167,9 @@ mod tests {
     fn contact_drops_blank_parts() {
         let mut s = Settings { rescue_name: "Paws".into(), phone: "".into(), email: "".into(), ..Default::default() };
         assert_eq!(contact_text(&s), "Interested in adopting? Contact Paws");
+        s.rescue_name = "  ".into();
+        assert_eq!(contact_text(&s), "Interested in adopting? Contact us!");
+        s.rescue_name = "Paws".into();
         s.phone = "555-1234".into();
         assert_eq!(contact_text(&s), "Interested in adopting? Call 555-1234");
         s.email = "a@b.org".into();

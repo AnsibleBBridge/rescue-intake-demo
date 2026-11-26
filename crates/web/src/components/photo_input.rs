@@ -10,7 +10,7 @@ pub fn PhotoInput(value: RwSignal<Option<String>>) -> impl IntoView {
         let input: web_sys::HtmlInputElement = event_target(&ev);
         let Some(file) = input.files().and_then(|f| f.get(0)) else { return };
         spawn_local(async move {
-            match photo::downscale(file, 1200, 0.8).await {
+            match photo::downscale(file, 900, 0.72).await {
                 Ok(url) => {
                     error.set(None);
                     value.set(Some(url));

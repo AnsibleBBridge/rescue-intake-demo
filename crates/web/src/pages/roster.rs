@@ -45,6 +45,14 @@ pub fn status_class(s: Status) -> &'static str {
     }
 }
 
+/// Badge text: an Outcome with a recorded method shows it ("Adopted"); otherwise the status label.
+pub fn status_text(a: &Animal) -> &'static str {
+    match (a.status, a.disposition.as_ref()) {
+        (Status::Outcome, Some(d)) => d.method.label(),
+        (s, _) => s.label(),
+    }
+}
+
 #[component]
 pub fn Roster() -> impl IntoView {
     let state = expect_context::<AppState>();
@@ -104,7 +112,7 @@ fn card(a: Animal) -> impl IntoView {
             <div class="photo">{photo}</div>
             <h2>{a.name.clone()}</h2>
             <p class="sub">{format!("{species} · {breed}")}</p>
-            <span class=status_class(a.status)>{a.status.label()}</span>
+            <span class=status_class(a.status)>{status_text(&a)}</span>
         </a>
     }
 }

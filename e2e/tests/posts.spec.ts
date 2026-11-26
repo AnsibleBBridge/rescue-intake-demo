@@ -18,7 +18,8 @@ test('Biscuit shows three tone cards with prefilled posts', async ({ page }) => 
   const areas = page.locator('textarea.post-text');
   await expect(areas).toHaveCount(3);
   for (let i = 0; i < 3; i++) await expect(areas.nth(i)).toHaveValue(/Biscuit/);
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
+  await expect(page.locator('img.share-img')).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 1400 });
   await page.screenshot({ path: `${OUT}/task-9-posts-1280.png`, fullPage: true });
 });
@@ -36,7 +37,8 @@ test('Copy puts the (edited) text on the clipboard and confirms', async ({ page,
 });
 
 test('Download gives a 1080x1080 PNG named after the pet', async ({ page }) => {
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
+  await expect(page.locator('img.share-img')).toBeVisible();
   const [dl] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('button', { name: 'Download image' }).click(),
@@ -58,7 +60,8 @@ test('sparse animal (name + species only) renders posts and image without "None"
   await expect(page).toHaveURL(/#\/animal\/[^/]+$/);
   await page.getByRole('link', { name: 'Social posts' }).click();
   await expect(page.getByRole('heading', { name: 'Upbeat' })).toBeVisible();
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
+  await expect(page.locator('img.share-img')).toBeVisible();
   for (const v of await page.locator('textarea.post-text').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value))) {
     expect(v).toContain('Waffles');
     expect(v).not.toContain('None');
@@ -73,7 +76,8 @@ test('unknown id shows not-found', async ({ page }) => {
 
 test('375px: no horizontal scroll', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
+  await expect(page.locator('img.share-img')).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
   await page.screenshot({ path: `${OUT}/task-9-posts-375.png`, fullPage: true });

@@ -20,11 +20,17 @@ fn PostCard(post: Post) -> impl IntoView {
     let copy = move |_| {
         let Some(el) = area.get() else { return };
         let text = el.value();
+        // navigator.clipboard is undefined on insecure origins; treat that as a failure.
+        let nav = window().navigator();
+        let has = js_sys::Reflect::get(&nav, &"clipboard".into()).map(|v| !v.is_undefined() && !v.is_null()).unwrap_or(false);
+        // iOS Safari only honours the write if it is issued synchronously inside the click
+        // handler, so start it here and only await the resulting promise below.
+        let pending = has.then(|| nav.clipboard().write_text(&text));
         leptos::task::spawn_local(async move {
-            // navigator.clipboard is undefined on insecure origins; treat that as a failure.
-            let nav = window().navigator();
-            let has = js_sys::Reflect::get(&nav, &"clipboard".into()).map(|v| !v.is_undefined() && !v.is_null()).unwrap_or(false);
-            let ok = has && JsFuture::from(nav.clipboard().write_text(&text)).await.is_ok();
+            let ok = match pending {
+                Some(p) => JsFuture::from(p).await.is_ok(),
+                None => false,
+            };
             if ok {
                 hint.set(false);
                 copied.set(true);
@@ -61,6 +67,8 @@ pub fn Posts(id: String) -> impl IntoView {
     let error = RwSignal::new(None::<String>);
     // Mirrors the canvas's `data-ready` attribute so the button can react to it.
     let ready = RwSignal::new(false);
+    // The rendered PNG as a data URL, so phones can long-press the <img> to save it.
+    let png = RwSignal::new(None::<String>);
 
     // Re-render the image whenever the animal (or branding) changes; runs after the canvas mounts.
     Effect::new(move |_| {
@@ -68,7 +76,13 @@ pub fn Posts(id: String) -> impl IntoView {
         let settings = state.data.with(|d| d.settings.clone());
         error.set(None);
         ready.set(false);
-        if let Err(e) = share_image::render_with(&c, &a, &settings, move |e| error.set(Some(e)), move || ready.set(true)) {
+        png.set(None);
+        let c2 = c.clone();
+        let on_ready = move || {
+            png.set(c2.to_data_url_with_type("image/png").ok());
+            ready.set(true);
+        };
+        if let Err(e) = share_image::render_with(&c, &a, &settings, move |e| error.set(Some(e)), on_ready) {
             error.set(Some(format!("Couldn't draw the share image: {e}")));
         }
     });
@@ -101,6 +115,7 @@ pub fn Posts(id: String) -> impl IntoView {
                 let settings = state.data.with(|d| d.settings.clone());
                 let posts = generate_posts(&a, &settings);
                 let back = format!("\u{2190} Back to {}", a.name);
+                let img_alt = format!("Share image for {}", a.name);
                 view! {
                     <div class="sheet-actions">
                         <a class="btn" href=href(&Route::Animal(a.id.clone()))>{back}</a>
@@ -111,7 +126,13 @@ pub fn Posts(id: String) -> impl IntoView {
                     </div>
                     <section class="card share-card">
                         <h2>"Share image"</h2>
-                        <canvas node_ref=canvas class="share-canvas" aria-label=format!("Share image for {}", a.name)></canvas>
+                        // The canvas stays in the DOM as the renderer but is hidden once the <img> copy exists.
+                        <canvas node_ref=canvas class="share-canvas" aria-label=format!("Share image for {}", a.name)
+                            style:display=move || if png.get().is_some() { "none" } else { "block" }></canvas>
+                        {move || png.get().map(|url| view! {
+                            <img class="share-canvas share-img" src=url alt=img_alt.clone() />
+                            <p class="note">"On a phone? Press and hold the image to save it to Photos."</p>
+                        })}
                         {move || error.get().map(|e| view! { <p class="notice" role="alert">{e}</p> })}
                         <button type="button" class="btn primary" on:click=download prop:disabled=move || !ready.get()>
                             {move || if ready.get() { "Download image" } else { "Preparing image\u{2026}" }}

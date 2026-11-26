@@ -41,7 +41,7 @@ impl Store for LocalStore {
     fn save(&self, d: &StoreData) -> Result<(), String> {
         Self::storage()?
             .set_item(STORAGE_KEY, &d.to_json())
-            .map_err(|_| "Couldn't save (browser storage full or blocked)".to_string())
+            .map_err(|_| "Couldn't save (browser storage full or blocked). Storage may be full \u{2014} remove a photo or use Reset demo on the Animals page.".to_string())
     }
 }
 

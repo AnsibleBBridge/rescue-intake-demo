@@ -48,7 +48,7 @@ test('empty name shows an error naming it and stays on the form', async ({ page 
   await expect(page).toHaveURL(/#\/new$/);
 });
 
-test('large photo is downscaled below 400 KB in storage', async ({ page }) => {
+test('large photo is downscaled below 250 KB in storage', async ({ page }) => {
   const buf = await bigJpeg(page, 3600, 2400);
   expect(buf.length).toBeGreaterThan(100_000);
   await fillMinimum(page, 'Photogenic');
@@ -61,7 +61,7 @@ test('large photo is downscaled below 400 KB in storage', async ({ page }) => {
     return d.animals.find((a: any) => a.name === 'Photogenic').photo.length;
   }, KEY);
   expect(len).toBeGreaterThan(1000);
-  expect(len).toBeLessThan(400_000);
+  expect(len).toBeLessThan(250_000);
 });
 
 test('non-image file shows the photo error and keeps no preview', async ({ page }) => {

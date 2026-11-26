@@ -29,7 +29,7 @@ jobs:
           sudo mv trunk /usr/local/bin/trunk
           trunk --version
       - name: Test core logic
-        run: cargo test -p rescue-core
+        run: cargo test --workspace
       - name: Build site
         working-directory: crates/web
         run: trunk build --release --public-url /rescue-intake-demo/

@@ -9,8 +9,10 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Pepper', level: 1 })).toBeVisible();
 });
 
-test('Pepper shows at least two red overdue items', async ({ page }) => {
-  expect(await page.locator('.ci.overdue').count()).toBeGreaterThanOrEqual(2);
+test('Pepper shows a red overdue item, and rabies is only a reminder', async ({ page }) => {
+  expect(await page.locator('.ci.overdue').count()).toBeGreaterThanOrEqual(1);
+  await expect(page.locator('.ci[data-key="rabies"]')).toContainText('Add when vaccinated');
+  await expect(page.locator('.ci[data-key="rabies"]')).not.toHaveClass(/overdue/);
   await expect(page.locator('.ci.overdue').first()).toContainText('overdue by');
 });
 
@@ -21,6 +23,24 @@ test('editing Pepper to add a driver license turns the source item green', async
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.locator('.ci[data-key="source"]')).toHaveClass(/done/);
   await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
+});
+
+test('status pills and outcome save are disabled while editing', async ({ page }) => {
+  await page.getByRole('button', { name: 'Outcome', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.getByLabel("Driver's license #").fill('N9');
+  await expect(page.getByRole('button', { name: 'Available', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Save Outcome' })).toBeDisabled();
+  await expect(page.getByText('Save or cancel your edits first.').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('button', { name: 'Available', exact: true })).toBeEnabled();
+});
+
+test('Biscuit profile shows all entered details', async ({ page }) => {
+  await page.goto('/#/animal/sample-biscuit');
+  await expect(page.locator('dl.details dt', { hasText: /^Sex$/ })).toBeVisible();
+  await expect(page.locator('dl.details dt', { hasText: /^Good with$/ })).toBeVisible();
+  await expect(page.locator('dl.details')).not.toContainText(/None|Unknown/);
 });
 
 test('Cancel leaves the record unchanged', async ({ page }) => {
@@ -45,7 +65,7 @@ test('outcome form adapts to the method and saves to the roster badge', async ({
   await page.getByRole('button', { name: 'Save Outcome' }).click();
   await expect(page.locator('.ci[data-key="disposition"]')).toHaveClass(/done/);
   await page.goto('/#/');
-  await expect(page.locator('.animal-card', { hasText: 'Pepper' }).locator('.badge')).toHaveText('Outcome');
+  await expect(page.locator('.animal-card', { hasText: 'Pepper' }).locator('.badge')).toHaveText('Adopted');
 });
 
 test('Biscuit has no overdue items', async ({ page }) => {

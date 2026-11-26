@@ -24,6 +24,8 @@ pub fn DispositionForm(
     initial: Option<Disposition>,
     on_save: Callback<Disposition>,
     save_error: RwSignal<Option<String>>,
+    /// True while the profile's edit form is open: saving here would discard those edits.
+    #[prop(into)] disabled: Signal<bool>,
 ) -> impl IntoView {
     let d = initial.unwrap_or(Disposition {
         date: Some(clock::now().date()),
@@ -42,6 +44,7 @@ pub fn DispositionForm(
 
     let on_submit = move |ev: leptos::ev::SubmitEvent| {
         ev.prevent_default();
+        if disabled.get_untracked() { return; }
         let m = method.get_untracked();
         let recipient = matches!(m, OutcomeMethod::Adopted | OutcomeMethod::Transferred | OutcomeMethod::ReturnedToOwner);
         let euth = m == OutcomeMethod::Euthanized;
@@ -86,8 +89,9 @@ pub fn DispositionForm(
                 }.into_any(),
             }}
             <Hint section="23 NAC 18-010.05A" text="Complete within 48 hours of the animal leaving your care." />
+            {move || disabled.get().then(|| view! { <p class="note">"Save or cancel your edits first."</p> })}
             {move || save_error.get().map(|e| view! { <p class="notice" role="alert">{e}</p> })}
-            <button type="submit" class="btn primary wide">"Save Outcome"</button>
+            <button type="submit" class="btn primary wide" prop:disabled=move || disabled.get()>"Save Outcome"</button>
         </form>
     }
 }

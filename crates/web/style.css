@@ -147,3 +147,5 @@ h2 { font-size: 1.1rem; margin: 8px 0 0; }
 /* Settings + fact-sheet empty overview */
 .settings { max-width: 560px; margin-top: 12px; }
 .sheet-soon { margin: 0; text-align: center; color: var(--muted); font-style: italic; }
+.ci.reminder { background: var(--bg); }
+.chip:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }

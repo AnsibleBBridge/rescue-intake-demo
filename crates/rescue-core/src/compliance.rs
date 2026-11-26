@@ -8,6 +8,8 @@ pub enum ItemState {
     Open { due: NaiveDateTime },
     Overdue { due: NaiveDateTime },
     NotApplicable,
+    /// Worth doing but carries no deadline, so it is never Open or Overdue.
+    Reminder,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -99,8 +101,13 @@ pub fn check(animal: &Animal, now: NaiveDateTime) -> Vec<ComplianceItem> {
             na_or(animal.out_of_state, filled_opt(&animal.health_certificate), intake_due)),
         item("health_record", "Health record started", "23 NAC 18-010.06",
             state(!animal.health.is_empty(), intake_due)),
-        item("rabies", "Rabies vaccination recorded", "23 NAC 18-010.06A",
-            state(animal.health.iter().any(|h| h.kind == HealthKind::RabiesVaccination), intake_due)),
+        // 010.06A only says health records include the rabies certificate; it sets no deadline.
+        item("rabies", "Rabies certificate on file (if vaccinated)", "23 NAC 18-010.06A",
+            if animal.health.iter().any(|h| h.kind == HealthKind::RabiesVaccination) {
+                ItemState::Done
+            } else {
+                ItemState::Reminder
+            }),
         item("disposition", "Outcome record (date, recipient, method)", "23 NAC 18-010.05A",
             na_or(is_outcome, disp_ok, disp_due)),
     ]
@@ -204,6 +211,22 @@ mod tests {
         d.euthanasia_method = Some("Sodium pentobarbital".into());
         a.disposition = Some(d);
         assert_eq!(state_of(&check(&a, dt(21, 12)), "disposition"), ItemState::Done);
+    }
+
+    #[test]
+    fn rabies_is_a_reminder_never_overdue() {
+        let mut a = animal();
+        // Days past intake: still a Reminder, not Overdue.
+        assert_eq!(state_of(&check(&a, dt(24, 12)), "rabies"), ItemState::Reminder);
+        a.health.push(HealthEntry {
+            date: dt(20, 10).date(),
+            kind: HealthKind::RabiesVaccination,
+            description: "Rabies".into(),
+            reason: None,
+            result: None,
+            rabies_certificate: None,
+        });
+        assert_eq!(state_of(&check(&a, dt(24, 12)), "rabies"), ItemState::Done);
     }
 
     #[test]

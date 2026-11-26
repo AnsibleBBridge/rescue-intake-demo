@@ -9,6 +9,7 @@ use crate::store::AppState;
 use leptos::prelude::*;
 use rescue_core::compliance;
 use rescue_core::model::*;
+use rescue_core::posts::fact_lines;
 
 /// (label, value) pairs worth showing; blanks are dropped so the summary stays short.
 fn detail_rows(a: &Animal) -> Vec<(&'static str, String)> {
@@ -40,9 +41,12 @@ fn detail_rows(a: &Animal) -> Vec<(&'static str, String)> {
         }),
     ));
     let s = &a.story;
-    rows.push(("Age", s.age_text.clone()));
-    rows.push(("Color", s.color_markings.clone()));
-    rows.push(("Weight", s.weight_lbs.map(|w| format!("{w} lbs"))));
+    // Same wording as the fact sheet and posts; the fee has its own row below.
+    let facts = fact_lines(a);
+    for (k, v) in facts.iter().filter(|(k, _)| *k != "Fee") {
+        rows.push((k, Some(v.clone())));
+    }
+    rows.push(("Birth date", s.birth_date.map(|d| d.format("%b %-d, %Y").to_string())));
     rows.push(("Personality", s.personality.clone()));
     rows.push(("Special needs", s.special_needs.clone()));
     rows.push(("Adoption fee", s.adoption_fee.map(|f| format!("${f}"))));
@@ -89,7 +93,8 @@ pub fn Profile(id: String) -> impl IntoView {
                 };
                 let current = a.clone();
                 let on_pick = Callback::new(move |s: Status| {
-                    if s == current.status { return; }
+                    // Saving the stale snapshot would discard in-progress edits.
+                    if s == current.status || editing.get_untracked() { return; }
                     let mut n = current.clone();
                     n.status = s;
                     n.status_changed_at = clock::now();
@@ -118,10 +123,11 @@ pub fn Profile(id: String) -> impl IntoView {
                 let items = compliance::check(&a, now);
                 let rows = detail_rows(&a);
                 let health: Vec<String> = a.health.iter().map(health_line).collect();
+                let edit_lock = Signal::derive(move || editing.get());
                 let status_sig = Signal::derive({ let s = a.status; move || s });
                 let edit_src = a.clone();
                 let outcome_form = (a.status == Status::Outcome).then(|| view! {
-                    <DispositionForm initial=a.disposition.clone() on_save=on_outcome save_error=save_error />
+                    <DispositionForm initial=a.disposition.clone() on_save=on_outcome save_error=save_error disabled=edit_lock />
                 });
 
                 view! {
@@ -129,12 +135,13 @@ pub fn Profile(id: String) -> impl IntoView {
                         <div class="photo hero">{photo}</div>
                         <h1>{a.name.clone()}</h1>
                         <p class="sub">{format!("{} · {breed}", a.species.label())}</p>
-                        <span class=crate::pages::roster::status_class(a.status)>{a.status.label()}</span>
+                        <span class=crate::pages::roster::status_class(a.status)>{crate::pages::roster::status_text(&a)}</span>
                     </section>
                     {move || save_error.get().filter(|_| !editing.get()).map(|e| view! { <p class="notice" role="alert">{e}</p> })}
                     <section class="card">
                         <h2>"Status"</h2>
-                        <StatusStepper current=status_sig on_pick=on_pick />
+                        <StatusStepper current=status_sig on_pick=on_pick disabled=edit_lock />
+                        {move || editing.get().then(|| view! { <p class="note" data-testid="edit-lock">"Save or cancel your edits first."</p> })}
                     </section>
                     {outcome_form}
                     <section class="card">

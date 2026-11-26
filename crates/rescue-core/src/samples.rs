@@ -62,7 +62,7 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
         disposition: None,
     };
 
-    // Missing driver's license and rabies on purpose: past the 48h window they show Overdue.
+    // Missing driver's license on purpose: past the 48h window it shows Overdue (rabies is only a reminder).
     let pepper = Animal {
         id: "sample-pepper".into(),
         name: "Pepper".into(),

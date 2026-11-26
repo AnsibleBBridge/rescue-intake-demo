@@ -25,7 +25,7 @@ test('settings flow into the fact sheet, posts and share image', async ({ page }
   await expect(page.locator('.sheet-title')).toContainText('Prairie Paws');
 
   await page.goto('/#/animal/sample-biscuit/posts');
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
   const posts = await page.locator('textarea.post-text').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value));
   expect(posts.some((v) => v.includes('Prairie Paws'))).toBe(true);
   expect(posts.some((v) => v.includes('#adopt #nebraska'))).toBe(true);
@@ -35,7 +35,7 @@ test('settings flow into the fact sheet, posts and share image', async ({ page }
   await page.getByLabel('Rescue name').fill('Other Rescue');
   await page.getByRole('button', { name: 'Save' }).click();
   await page.goto('/#/animal/sample-biscuit/posts');
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
 });
 
 test('saved values persist across reload and Saved clears on edit', async ({ page }) => {
@@ -51,7 +51,7 @@ test('saved values persist across reload and Saved clears on edit', async ({ pag
 
 test('Download image enables once the share image is ready', async ({ page }) => {
   await page.goto('/#/animal/sample-biscuit/posts');
-  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+  await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
   await expect(page.getByRole('button', { name: 'Download image' })).toBeEnabled();
 });
 

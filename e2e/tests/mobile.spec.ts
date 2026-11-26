@@ -20,7 +20,10 @@ for (const [name, url] of pages) {
     await page.evaluate((k) => localStorage.removeItem(k), KEY);
     await page.goto(url);
     await expect(page.locator('main.page > *').first()).toBeVisible();
-    if (name === 'posts') await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeVisible();
+    if (name === 'posts') {
+      await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
+      await expect(page.locator('img.share-img')).toBeVisible();
+    }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.screenshot({ path: `${OUT}/task-11-${name}-375.png`, fullPage: true });
