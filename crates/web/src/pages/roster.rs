@@ -101,11 +101,11 @@ pub fn Roster() -> impl IntoView {
 fn card(a: Animal) -> impl IntoView {
     let link = href(&Route::Animal(a.id.clone()));
     let breed = a.story.breed.clone().unwrap_or_else(|| "Unknown breed".into());
-    let species = a.species.label();
-    let initial = a.name.chars().next().unwrap_or('?').to_string();
+    let species = a.kind_label();
+    let art = crate::placeholder::emoji(a.species.family());
     let photo = match a.photo.clone() {
         Some(src) => view! { <img src=src alt=format!("Photo of {}", a.name) /> }.into_any(),
-        None => view! { <div class="ph" aria-hidden="true">{initial}</div> }.into_any(),
+        None => view! { <div class="ph" aria-hidden="true">{art}</div> }.into_any(),
     };
     view! {
         <a class="card animal-card" href=link>

@@ -1,6 +1,7 @@
 //! Printable adoption fact sheet (the rescue's "Pet Profile" layout): title band,
 //! Overview card beside a round photo with a name ribbon, Background card, contact band.
 use crate::app::{href, Route};
+use crate::placeholder::sil_path;
 use crate::store::AppState;
 use leptos::prelude::*;
 use rescue_core::model::*;
@@ -65,28 +66,12 @@ pub fn contact_text(s: &Settings) -> String {
     }
 }
 
-/// Silhouette outline (100x100 viewBox), shared with the share-image canvas.
-pub fn sil_path(species: Species) -> &'static str {
-    match species {
-        Species::Cat => "M22 14 L40 32 Q50 29 60 32 L78 14 L80 48 Q86 60 78 74 Q66 90 50 90 Q34 90 22 74 Q14 60 20 48 Z",
-        // Interim: every non-cat species uses the dog outline until the UI rework (Task 4).
-        _ => "M26 24 Q38 22 42 34 Q50 32 58 34 Q62 22 74 24 Q88 30 82 56 Q76 52 74 46 Q76 70 62 82 Q50 92 38 82 Q24 70 26 46 Q24 52 18 56 Q12 30 26 24 Z",
-    }
-}
-
 /// Simple silhouette used when there is no photo (kept inline so print needs no assets).
-fn silhouette(species: Species) -> impl IntoView {
-    match species {
-        Species::Cat => view! {
-            <svg class="sil" viewBox="0 0 100 100" aria-hidden="true">
-                <path d="M22 14 L40 32 Q50 29 60 32 L78 14 L80 48 Q86 60 78 74 Q66 90 50 90 Q34 90 22 74 Q14 60 20 48 Z" fill="currentColor"/>
-            </svg>
-        }.into_any(),
-        _ => view! {
-            <svg class="sil" viewBox="0 0 100 100" aria-hidden="true">
-                <path d="M26 24 Q38 22 42 34 Q50 32 58 34 Q62 22 74 24 Q88 30 82 56 Q76 52 74 46 Q76 70 62 82 Q50 92 38 82 Q24 70 26 46 Q24 52 18 56 Q12 30 26 24 Z" fill="currentColor"/>
-            </svg>
-        }.into_any(),
+fn silhouette(family: Family) -> impl IntoView {
+    view! {
+        <svg class="sil" viewBox="0 0 100 100" aria-hidden="true">
+            <path d=sil_path(family) fill="currentColor"/>
+        </svg>
     }
 }
 
@@ -111,7 +96,7 @@ pub fn FactSheet(id: String) -> impl IntoView {
                 let bg_empty = bg.personality.is_none() && bg.good_with.is_none() && bg.care.is_empty() && bg.special_needs.is_none() && bg.fee.is_none();
                 let photo = match a.photo.clone() {
                     Some(src) => view! { <img src=src alt=format!("Photo of {}", a.name) /> }.into_any(),
-                    None => view! { <div class="sheet-ph">{silhouette(a.species)}</div> }.into_any(),
+                    None => view! { <div class="sheet-ph">{silhouette(a.species.family())}</div> }.into_any(),
                 };
                 let back = format!("\u{2190} Back to {}", a.name);
                 view! {

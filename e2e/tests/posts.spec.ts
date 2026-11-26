@@ -1,23 +1,22 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 
-const KEY = 'rescue-demo-v1';
-const OUT = '../.superpowers/sdd/2026-11-25-rescue-intake-demo';
+import { KEY, OUT, pickSpecies } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.evaluate((k) => localStorage.removeItem(k), KEY);
-  await page.goto('/#/animal/sample-biscuit/posts');
+  await page.goto('/#/animal/sample-clover/posts');
   await expect(page.getByRole('heading', { name: 'Upbeat' })).toBeVisible();
 });
 
-test('Biscuit shows three tone cards with prefilled posts', async ({ page }) => {
+test('Clover shows three tone cards with prefilled posts', async ({ page }) => {
   for (const t of ['Upbeat', 'Heartfelt', 'Short']) {
     await expect(page.getByRole('heading', { name: t, exact: true })).toBeVisible();
   }
   const areas = page.locator('textarea.post-text');
   await expect(areas).toHaveCount(3);
-  for (let i = 0; i < 3; i++) await expect(areas.nth(i)).toHaveValue(/Biscuit/);
+  for (let i = 0; i < 3; i++) await expect(areas.nth(i)).toHaveValue(/Clover/);
   await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
   await expect(page.locator('img.share-img')).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 1400 });
@@ -43,8 +42,8 @@ test('Download gives a 1080x1080 PNG named after the pet', async ({ page }) => {
     page.waitForEvent('download'),
     page.getByRole('button', { name: 'Download image' }).click(),
   ]);
-  expect(dl.suggestedFilename()).toBe('biscuit-adopt-me.png');
-  const file = `${OUT}/task-9-share-biscuit.png`;
+  expect(dl.suggestedFilename()).toBe('clover-adopt-me.png');
+  const file = `${OUT}/task-9-share-clover.png`;
   await dl.saveAs(file);
   const buf = fs.readFileSync(file);
   expect(buf.subarray(1, 4).toString('latin1')).toBe('PNG');
@@ -55,7 +54,7 @@ test('Download gives a 1080x1080 PNG named after the pet', async ({ page }) => {
 test('sparse animal (name + species only) renders posts and image without "None"', async ({ page }) => {
   await page.goto('/#/new');
   await page.getByLabel('Name', { exact: true }).first().fill('Waffles');
-  await page.getByRole('button', { name: 'Dog', exact: true }).click();
+  await pickSpecies(page, 'Dog');
   await page.getByRole('button', { name: 'Save intake' }).click();
   await expect(page).toHaveURL(/#\/animal\/[^/]+$/);
   await page.getByRole('link', { name: 'Social posts' }).click();

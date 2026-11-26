@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const KEY = 'rescue-demo-v1';
+import { KEY } from './helpers';
 const cards = (page) => page.locator('.animal-card');
 
 test.beforeEach(async ({ page }) => {
@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 
 test('roster shows three sample cards', async ({ page }) => {
   await expect(cards(page)).toHaveCount(3);
-  for (const n of ['Biscuit', 'Pepper', 'Moose']) {
+  for (const n of ['Clover', 'Jasper', 'Puddles']) {
     await expect(page.locator('.animal-card', { hasText: n })).toBeVisible();
   }
 });

@@ -1,6 +1,6 @@
 //! 1080x1080 "adopt me" share image drawn on a canvas, in the fact sheet's visual family
 //! (periwinkle bands, pale background, round photo with a name ribbon).
-use crate::pages::fact_sheet::sil_path;
+use crate::placeholder::sil_path;
 use rescue_core::model::*;
 use rescue_core::posts::fact_lines;
 use std::cell::Cell;
@@ -130,7 +130,7 @@ fn draw(ctx: &CanvasRenderingContext2d, a: &Animal, s: &Settings, photo: Option<
         }
         None => {
             // Silhouette from the same path data the fact sheet uses (100x100 box, scaled to 60%).
-            let path = Path2d::new_with_path_string(sil_path(a.species)).map_err(js)?;
+            let path = Path2d::new_with_path_string(sil_path(a.species.family())).map_err(js)?;
             ctx.save();
             let k = 2.0 * r * 0.6 / 100.0;
             ctx.translate(cx - r * 0.6, cy - r * 0.6).map_err(js)?;

@@ -1,15 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-const KEY = 'rescue-demo-v1';
-const OUT = '../.superpowers/sdd/2026-11-25-rescue-intake-demo';
+import { KEY, OUT } from './helpers';
 
 // Every page must fit a 375px phone without sideways scrolling.
 const pages: [string, string][] = [
   ['roster', '/#/'],
   ['intake', '/#/new'],
-  ['profile', '/#/animal/sample-biscuit'],
-  ['sheet', '/#/animal/sample-biscuit/sheet'],
-  ['posts', '/#/animal/sample-biscuit/posts'],
+  ['profile', '/#/animal/sample-clover'],
+  ['sheet', '/#/animal/sample-clover/sheet'],
+  ['posts', '/#/animal/sample-clover/posts'],
   ['settings', '/#/settings'],
 ];
 

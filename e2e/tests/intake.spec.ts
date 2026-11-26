@@ -2,8 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-
-const KEY = 'rescue-demo-v1';
+import { KEY, pickSpecies } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -14,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 
 const fillMinimum = async (page: Page, name: string) => {
   await page.getByLabel('Name', { exact: true }).first().fill(name);
-  await page.getByRole('button', { name: 'Dog', exact: true }).click();
+  await pickSpecies(page, 'Dog');
 };
 
 // A big, smooth (gradient + shapes) JPEG: realistic photo size without incompressible noise.
@@ -42,7 +41,7 @@ test('only name and species saves, lands on profile route, roster has 4 cards', 
 });
 
 test('empty name shows an error naming it and stays on the form', async ({ page }) => {
-  await page.getByRole('button', { name: 'Dog', exact: true }).click();
+  await pickSpecies(page, 'Dog');
   await page.getByRole('button', { name: 'Save intake' }).click();
   await expect(page.getByRole('alert')).toContainText('Name');
   await expect(page).toHaveURL(/#\/new$/);

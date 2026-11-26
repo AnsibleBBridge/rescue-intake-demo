@@ -28,7 +28,17 @@ fn detail_rows(a: &Animal) -> Vec<(&'static str, String)> {
             Source::Agency { agency, official_title, address } => format!("{agency}, {official_title}, {address}"),
         }),
     ));
-    rows.push(("Health certificate", a.health_certificate.clone()));
+    rows.push(("Certificate of veterinary inspection", a.health_certificate.clone()));
+    rows.push(("Proof of ownership", a.ownership_doc.clone()));
+    rows.push(("Scrapie tag", a.scrapie_tag.clone()));
+    rows.push((
+        "Coggins",
+        a.coggins.as_ref().and_then(|c| {
+            let parts: Vec<String> = [c.date.map(|d| d.format("%b %-d, %Y").to_string()), c.lab.clone(), c.result.clone()]
+                .into_iter().flatten().filter(|p| !p.trim().is_empty()).collect();
+            (!parts.is_empty()).then(|| parts.join(" · "))
+        }),
+    ));
     let id = &a.identification;
     rows.push(("Tag", id.tag.clone()));
     rows.push(("Cage card", id.cage_card.clone()));
@@ -115,26 +125,29 @@ pub fn Profile(id: String) -> impl IntoView {
                 let photo = match a.photo.clone() {
                     Some(src) => view! { <img src=src alt=format!("Photo of {}", a.name) /> }.into_any(),
                     None => {
-                        let c = if a.species == Species::Cat { "\u{1F431}" } else { "\u{1F436}" };
+                        let c = crate::placeholder::emoji(a.species.family());
                         view! { <div class="ph" aria-hidden="true">{c}</div> }.into_any()
                     }
                 };
                 let breed = a.story.breed.clone().unwrap_or_else(|| "Unknown breed".into());
                 let items = compliance::check(&a, now);
                 let rows = detail_rows(&a);
+                let regulated = matches!(a.species.family(), Family::Dog | Family::Cat);
+                // Only dogs and cats have 48-hour deadlines; say so before the softer reminders.
+                let farm_note = (!regulated).then(|| view! { <p class="sub">{crate::components::animal_form::FARM_NOTE}</p> });
                 let health: Vec<String> = a.health.iter().map(health_line).collect();
                 let edit_lock = Signal::derive(move || editing.get());
                 let status_sig = Signal::derive({ let s = a.status; move || s });
                 let edit_src = a.clone();
                 let outcome_form = (a.status == Status::Outcome).then(|| view! {
-                    <DispositionForm initial=a.disposition.clone() on_save=on_outcome save_error=save_error disabled=edit_lock />
+                    <DispositionForm regulated=regulated initial=a.disposition.clone() on_save=on_outcome save_error=save_error disabled=edit_lock />
                 });
 
                 view! {
                     <section class="profile-head">
                         <div class="photo hero">{photo}</div>
                         <h1>{a.name.clone()}</h1>
-                        <p class="sub">{format!("{} · {breed}", a.species.label())}</p>
+                        <p class="sub">{format!("{} · {breed}", a.kind_label())}</p>
                         <span class=crate::pages::roster::status_class(a.status)>{crate::pages::roster::status_text(&a)}</span>
                     </section>
                     {move || save_error.get().filter(|_| !editing.get()).map(|e| view! { <p class="notice" role="alert">{e}</p> })}
@@ -145,7 +158,8 @@ pub fn Profile(id: String) -> impl IntoView {
                     </section>
                     {outcome_form}
                     <section class="card">
-                        <h2>"Compliance"</h2>
+                        <h2>"Records & reminders"</h2>
+                        {farm_note}
                         <ComplianceList items=items now=now />
                     </section>
                     <div class="chips">

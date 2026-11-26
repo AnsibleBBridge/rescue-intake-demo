@@ -1,14 +1,17 @@
-//! Compliance checklist card: one row per applicable 23 NAC 18 item with its due state.
+//! Records & reminders list: one row per applicable item with its due state (48h deadlines
+//! for dogs/cats, plain reminders for everything else).
 use chrono::NaiveDateTime;
 use rescue_core::compliance::{ComplianceItem, ItemState};
 use leptos::prelude::*;
 
 /// Human wording for an item's state; pure so it can be unit-tested on the host.
-pub fn format_due(state: &ItemState, now: NaiveDateTime) -> String {
+pub fn format_due(key: &str, state: &ItemState, now: NaiveDateTime) -> String {
     match state {
         ItemState::Done => "Done".into(),
         ItemState::NotApplicable => String::new(),
-        ItemState::Reminder => "Add when vaccinated".into(),
+        // The rabies reminder is only for dogs/cats; every other reminder has no clock.
+        ItemState::Reminder if key == "rabies" => "Add when vaccinated".into(),
+        ItemState::Reminder => "Reminder \u{2014} no deadline".into(),
         ItemState::Open { due } => {
             let mins = (*due - now).num_minutes();
             if mins < 60 { "due in <1h".into() } else { format!("due in {}h", (mins + 59) / 60) }
@@ -43,7 +46,7 @@ pub fn ComplianceList(items: Vec<ComplianceItem>, now: NaiveDateTime) -> impl In
                     <span class="ci-icon" aria-hidden="true">{icon}</span>
                     <span class="ci-body">
                         <span class="ci-label">{i.label}</span>
-                        <span class="ci-due">{format_due(&i.state, now)}</span>
+                        <span class="ci-due">{format_due(i.key, &i.state, now)}</span>
                         <span class="ci-cite">{i.section}</span>
                     </span>
                 </li>
@@ -61,8 +64,8 @@ mod tests {
     fn now() -> NaiveDateTime {
         NaiveDate::from_ymd_opt(2026, 11, 25).unwrap().and_hms_opt(12, 0, 0).unwrap()
     }
-    fn open(mins: i64) -> String { format_due(&ItemState::Open { due: now() + Duration::minutes(mins) }, now()) }
-    fn over(mins: i64) -> String { format_due(&ItemState::Overdue { due: now() - Duration::minutes(mins) }, now()) }
+    fn open(mins: i64) -> String { format_due("k", &ItemState::Open { due: now() + Duration::minutes(mins) }, now()) }
+    fn over(mins: i64) -> String { format_due("k", &ItemState::Overdue { due: now() - Duration::minutes(mins) }, now()) }
 
     #[test]
     fn open_rounds_hours_up() {
@@ -89,8 +92,9 @@ mod tests {
     }
     #[test]
     fn done_and_na() {
-        assert_eq!(format_due(&ItemState::Done, now()), "Done");
-        assert_eq!(format_due(&ItemState::NotApplicable, now()), "");
-        assert!(format_due(&ItemState::Reminder, now()).contains("Add when vaccinated"));
+        assert_eq!(format_due("k", &ItemState::Done, now()), "Done");
+        assert_eq!(format_due("k", &ItemState::NotApplicable, now()), "");
+        assert!(format_due("rabies", &ItemState::Reminder, now()).contains("Add when vaccinated"));
+        assert!(format_due("coggins", &ItemState::Reminder, now()).contains("no deadline"));
     }
 }

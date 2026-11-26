@@ -1,17 +1,16 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 
-const KEY = 'rescue-demo-v1';
-const OUT = '../.superpowers/sdd/2026-11-25-rescue-intake-demo';
+import { KEY, OUT, pickSpecies } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.evaluate((k) => localStorage.removeItem(k), KEY);
-  await page.goto('/#/animal/sample-biscuit/sheet');
-  await expect(page.locator('.ribbon')).toHaveText('Biscuit');
+  await page.goto('/#/animal/sample-clover/sheet');
+  await expect(page.locator('.ribbon')).toHaveText('Clover');
 });
 
-test('Biscuit sheet shows Overview labels and name ribbon, no Fun Facts', async ({ page }) => {
+test('Clover sheet shows Overview labels and name ribbon, no Fun Facts', async ({ page }) => {
   const sheet = page.locator('.sheet');
   await expect(sheet.getByText('Overview')).toBeVisible();
   await expect(sheet.locator('dt', { hasText: 'Breed' })).toBeVisible();
@@ -41,7 +40,7 @@ test('prints to exactly one Letter page', async ({ page }) => {
 test('sparse animal has no None/Unknown/empty rows and shows the fallback', async ({ page }) => {
   await page.goto('/#/new');
   await page.getByLabel('Name', { exact: true }).first().fill('Waffles');
-  await page.getByRole('button', { name: 'Dog', exact: true }).click();
+  await pickSpecies(page, 'Dog');
   await page.getByRole('button', { name: 'Save intake' }).click();
   await expect(page).toHaveURL(/#\/animal\/[^/]+$/);
   await page.getByRole('link', { name: 'Fact sheet' }).click();

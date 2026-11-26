@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const KEY = 'rescue-demo-v1';
-const OUT = '../.superpowers/sdd/2026-11-25-rescue-intake-demo';
+import { KEY, OUT, pickSpecies } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -20,11 +19,11 @@ test('settings flow into the fact sheet, posts and share image', async ({ page }
   await page.screenshot({ path: `${OUT}/task-10-settings-375.png`, fullPage: true });
   await page.setViewportSize({ width: 1280, height: 720 });
 
-  await page.goto('/#/animal/sample-biscuit/sheet');
+  await page.goto('/#/animal/sample-clover/sheet');
   await expect(page.locator('.sheet-foot')).toContainText('402-555-0199');
   await expect(page.locator('.sheet-title')).toContainText('Prairie Paws');
 
-  await page.goto('/#/animal/sample-biscuit/posts');
+  await page.goto('/#/animal/sample-clover/posts');
   await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
   const posts = await page.locator('textarea.post-text').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value));
   expect(posts.some((v) => v.includes('Prairie Paws'))).toBe(true);
@@ -34,7 +33,7 @@ test('settings flow into the fact sheet, posts and share image', async ({ page }
   await page.getByRole('link', { name: 'Settings' }).click();
   await page.getByLabel('Rescue name').fill('Other Rescue');
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.goto('/#/animal/sample-biscuit/posts');
+  await page.goto('/#/animal/sample-clover/posts');
   await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
 });
 
@@ -50,7 +49,7 @@ test('saved values persist across reload and Saved clears on edit', async ({ pag
 });
 
 test('Download image enables once the share image is ready', async ({ page }) => {
-  await page.goto('/#/animal/sample-biscuit/posts');
+  await page.goto('/#/animal/sample-clover/posts');
   await expect(page.locator('canvas.share-canvas[data-ready="1"]')).toBeAttached();
   await expect(page.getByRole('button', { name: 'Download image' })).toBeEnabled();
 });
@@ -65,7 +64,7 @@ test('unknown route shows Page not found with a roster link', async ({ page }) =
 test('fact sheet with no overview facts says details are coming soon', async ({ page }) => {
   await page.goto('/#/new');
   await page.getByLabel('Name', { exact: true }).first().fill('Waffles');
-  await page.getByRole('button', { name: 'Dog', exact: true }).click();
+  await pickSpecies(page, 'Dog');
   await page.getByRole('button', { name: 'Save intake' }).click();
   await expect(page).toHaveURL(/#\/animal\/[^/]+$/);
   await page.getByRole('link', { name: /fact sheet/i }).click();
