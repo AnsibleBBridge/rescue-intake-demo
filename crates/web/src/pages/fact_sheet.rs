@@ -10,10 +10,14 @@ use rescue_core::posts::fact_lines;
 /// Overview rows in the owner's order; fact_lines already skips unknowns/blanks.
 fn overview_rows(a: &Animal) -> Vec<(&'static str, String)> {
     let lines = fact_lines(a);
-    ["Breed", "Sex", "Age", "Weight", "Color", "Size potential"]
-        .into_iter()
-        .filter_map(|label| lines.iter().find(|(k, _)| *k == label).map(|(k, v)| (*k, v.clone())))
-        .collect()
+    // Kind always leads so the sheet names the species even with no breed.
+    let mut rows = vec![("Kind", a.kind_label())];
+    rows.extend(
+        ["Breed", "Sex", "Age", "Weight", "Color", "Size potential", "Height", "Horns", "Rideable", "Lays eggs", "Housing"]
+            .into_iter()
+            .filter_map(|label| lines.iter().find(|(k, _)| *k == label).map(|(k, v)| (*k, v.clone()))),
+    );
+    rows
 }
 
 /// Background card pieces: (personality, "Good with" line, special needs, fee). Missing -> None.
@@ -112,15 +116,13 @@ pub fn FactSheet(id: String) -> impl IntoView {
                         <div class="sheet-top">
                             <section class="sheet-card">
                                 <h2>"Overview"</h2>
-                                {if rows.is_empty() {
-                                    // Nothing known yet: a gentle line beats an empty card.
-                                    view! { <p class="sheet-soon">"Details coming soon."</p> }.into_any()
-                                } else {
-                                    view! {
-                                        <dl class="sheet-dl">
-                                            {rows.into_iter().map(|(k, v)| view! { <dt>{k}</dt><dd>{v}</dd> }).collect_view()}
-                                        </dl>
-                                    }.into_any()
+                                // Kind is always listed; with nothing else known, a gentle line follows it.
+                                {let soon = rows.len() <= 1;
+                                view! {
+                                    <dl class="sheet-dl">
+                                        {rows.into_iter().map(|(k, v)| view! { <dt>{k}</dt><dd>{v}</dd> }).collect_view()}
+                                    </dl>
+                                    {soon.then(|| view! { <p class="sheet-soon">"Details coming soon."</p> })}
                                 }}
                             </section>
                             <div class="sheet-photo">

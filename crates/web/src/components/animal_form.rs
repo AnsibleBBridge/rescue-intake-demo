@@ -8,7 +8,7 @@ use leptos::prelude::*;
 use rescue_core::model::*;
 
 /// Shown instead of the 48-hour note for anything that isn't a dog or cat.
-pub const FARM_NOTE: &str = "Nebraska has no single farm-sanctuary records law \u{2014} these are reminders, not deadlines. Dogs and cats follow 23 NAC 18.";
+pub const FARM_NOTE: &str = "We found no Nebraska records law written for farm-animal rescues \u{2014} these are reminders, not deadlines. Dogs and cats follow 23 NAC 18.";
 
 const DT_FMT: &str = "%Y-%m-%dT%H:%M";
 
@@ -62,10 +62,11 @@ pub fn Text(
     value: RwSignal<String>,
     #[prop(optional)] placeholder: &'static str,
     #[prop(default = "text")] kind: &'static str,
+    #[prop(optional)] step: &'static str,
 ) -> impl IntoView {
     view! {
         <label class="field"><span class="lbl">{label}</span>
-            <input type=kind placeholder=placeholder prop:value=move || value.get()
+            <input type=kind step=(!step.is_empty()).then_some(step) placeholder=placeholder prop:value=move || value.get()
                 on:input=move |ev| value.set(event_target_value(&ev)) />
         </label>
     }
@@ -248,6 +249,18 @@ pub fn AnimalForm(
                 rabies_certificate: if kind == HealthKind::RabiesVaccination { opt(&r.rabies.get_untracked()) } else { None },
             });
         }
+        // Height is hands.inches; only equines show the field.
+        let height_hands = if species.get_untracked().map(|s| s.family()) == Some(Family::Equine) {
+            match parse_height_hands(&height.get_untracked()) {
+                Ok(h) => h,
+                Err(m) => {
+                    form_error.set(Some(m.to_string()));
+                    return;
+                }
+            }
+        } else {
+            None
+        };
         form_error.set(None);
 
         let source = if is_agency.get_untracked() {
@@ -311,7 +324,7 @@ pub fn AnimalForm(
             personality: opt(&personality.get_untracked()),
             special_needs: opt(&special.get_untracked()),
             adoption_fee: fee.get_untracked().trim().parse().ok(),
-            height_hands: height.get_untracked().trim().parse().ok(),
+            height_hands,
             rideable: rideable.get_untracked(),
             horns: horns.get_untracked(),
             layer: layer.get_untracked(),
@@ -379,7 +392,7 @@ pub fn AnimalForm(
 
             <section class="card">
                 <h2>"Identification"</h2>
-                <p class="sub">"Any one of these identifies the animal. Each animal needs its own ID."</p>
+                <p class="sub">{move || if regulated() { "Any one of these identifies the animal. Each animal needs its own ID." } else { "Any one of these identifies the animal." }}</p>
                 <Text label="Tag #" value=tag />
                 <Text label="Cage card #" value=cage />
                 <Text label="Tattoo" value=tattoo />
@@ -426,9 +439,10 @@ pub fn AnimalForm(
                         <Text label="Driver's license #" value=p_dl />
                     }.into_any()
                 }}
-                <Text label="Proof of ownership / surrender form" value=ownership placeholder="e.g. form number or brand inspection #" />
-                {move || (!regulated()).then(|| view! {
-                    <Hint section="Nebraska Brand Committee (proof of ownership)" text="Keep the surrender form or other proof the animal was legally yours to take in; it protects you if ownership is ever questioned." />
+                <Text label="Proof of ownership / surrender form" value=ownership placeholder="e.g. surrender form #" />
+                {move || (!regulated()).then(|| {
+                    let section = if fam() == Some(Family::Equine) { "Nebraska Brand Committee (proof of ownership)" } else { "Good practice" };
+                    view! { <Hint section=section text="Keep the surrender form or other proof the animal was legally yours to take in; it protects you if ownership is ever questioned." /> }
                 })}
                 {move || {
                     let text = if is_agency.get() {
@@ -509,7 +523,7 @@ pub fn AnimalForm(
                 <Text label="Weight (lbs)" value=weight kind="number" />
                 <Text label="Size potential" value=size_potential placeholder="e.g. about 50 lbs grown" />
                 {move || (fam() == Some(Family::Equine)).then(|| view! {
-                    <Text label="Height (hands)" value=height kind="number" placeholder="e.g. 14.2" />
+                    <Text label="Height (hands)" value=height kind="number" step="0.1" placeholder="e.g. 14.2" />
                     <YesNo value=rideable label="Rideable" />
                 })}
                 {move || (fam() == Some(Family::SmallRuminant)).then(|| view! {

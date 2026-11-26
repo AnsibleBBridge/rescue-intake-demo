@@ -78,7 +78,9 @@ fn contact_done(source: &Option<Source>) -> bool {
 /// Farm/other species: nothing here has a legal 48h clock, so missing items are Reminders.
 /// The one exception is the scrapie tag on a sheep/goat that has already left.
 fn check_farm(animal: &Animal) -> Vec<ComplianceItem> {
+    // Brand inspection only really applies to equines; everything else is good practice.
     const BRAND: &str = "Nebraska Brand Committee (proof of ownership)";
+    let owner_section = if animal.species.family() == Family::Equine { BRAND } else { "Good practice" };
     const IMPORT: &str = "NDA import requirements";
     const GOOD: &str = "Good practice";
     let reminder = |done: bool| if done { ItemState::Done } else { ItemState::Reminder };
@@ -93,7 +95,7 @@ fn check_farm(animal: &Animal) -> Vec<ComplianceItem> {
     let mut items = vec![
         item("source_contact", "Where it came from (name & address)", GOOD,
             reminder(contact_done(&animal.source))),
-        item("ownership_doc", "Proof of ownership or surrender form", BRAND,
+        item("ownership_doc", "Proof of ownership or surrender form", owner_section,
             reminder(filled_opt(&animal.ownership_doc))),
         item("health_record", "Vet / health notes started", GOOD, reminder(!animal.health.is_empty())),
         item("cvi", "Certificate of veterinary inspection (arrived from out of state)", IMPORT,
@@ -128,7 +130,7 @@ fn check_farm(animal: &Animal) -> Vec<ComplianceItem> {
 
     items.push(item("outcome_record", "Outcome record (date, who it went to)", GOOD,
         na_or(is_outcome, disp.is_some_and(disposition_done))));
-    items.push(item("transfer_doc", "Bill of sale or adoption contract", BRAND,
+    items.push(item("transfer_doc", "Bill of sale or adoption contract", owner_section,
         na_or(left_to_new_owner, disp.is_some_and(|d| filled_opt(&d.transfer_doc)))));
     items
 }
@@ -386,6 +388,20 @@ mod tests {
         assert!(items.iter().all(|i| i.key != "coggins" && i.key != "scrapie_tag"));
         assert_eq!(state_of(&items, "source_contact"), ItemState::Reminder);
         assert_eq!(state_of(&items, "ownership_doc"), ItemState::Reminder);
+    }
+
+    #[test]
+    fn brand_committee_section_is_equine_only() {
+        for sp in [Species::Horse, Species::Donkey] {
+            let items = check(&farm(sp), dt(21, 12));
+            assert!(section_of(&items, "ownership_doc").starts_with("Nebraska Brand Committee"));
+            assert!(section_of(&items, "transfer_doc").starts_with("Nebraska Brand Committee"));
+        }
+        for sp in [Species::Goat, Species::Duck, Species::Sheep] {
+            let items = check(&farm(sp), dt(21, 12));
+            assert_eq!(section_of(&items, "ownership_doc"), "Good practice");
+            assert_eq!(section_of(&items, "transfer_doc"), "Good practice");
+        }
     }
 
     #[test]

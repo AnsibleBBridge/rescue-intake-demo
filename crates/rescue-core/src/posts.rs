@@ -170,7 +170,14 @@ fn blocks(parts: Vec<String>) -> String {
 
 /// "a Lab mix" / "a donkey" style noun phrase for the animal.
 fn kind_phrase(animal: &Animal) -> String {
-    let word = text(&animal.story.breed).map(str::to_string).unwrap_or_else(|| animal.noun());
+    let noun = animal.noun();
+    // "Pekin" + duck -> "Pekin duck"; "Lab mix" / "Mini Duck" already name the noun, so leave them.
+    let word = match text(&animal.story.breed) {
+        // Dog/cat breeds ("Lab mix", "Tabby") already read as a kind of animal; keep v1 wording.
+        Some(b) if matches!(animal.species.family(), Family::Dog | Family::Cat) || b.to_lowercase().contains(&noun) => b.to_string(),
+        Some(b) => format!("{b} {noun}"),
+        None => noun,
+    };
     let article = if word.chars().next().is_some_and(|c| "aeiouAEIOU".contains(c)) { "an" } else { "a" };
     format!("{article} {word}")
 }
@@ -281,6 +288,24 @@ mod tests {
                 assert!(!t.contains(bad), "{bad:?} in {t:?}");
             }
         }
+    }
+
+    #[test]
+    fn kind_phrase_adds_noun_to_farm_breeds() {
+        let mut d = animal(Sex::Female);
+        d.species = Species::Duck;
+        d.story.breed = Some("Pekin".into());
+        assert_eq!(kind_phrase(&d), "a Pekin duck");
+        d.story.breed = Some("Mini Duck".into());
+        assert_eq!(kind_phrase(&d), "a Mini Duck");
+        d.species = Species::Goat;
+        d.story.breed = Some("Oberhasli".into());
+        assert_eq!(kind_phrase(&d), "an Oberhasli goat");
+        d.story.breed = None;
+        assert_eq!(kind_phrase(&d), "a goat");
+        let mut dog = animal(Sex::Male);
+        dog.story.breed = Some("Lab mix".into());
+        assert_eq!(kind_phrase(&dog), "a Lab mix");
     }
 
     #[test]

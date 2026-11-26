@@ -26,7 +26,7 @@ test('goat intake shows scrapie + horns, not coggins; switching to duck hides th
   await page.getByLabel('Scrapie tag #').fill('NE-123');
   await page.getByRole('button', { name: 'Horned', exact: true }).click();
   // Farm intake: reminders note, not the 48-hour deadline note.
-  await expect(page.getByText('Nebraska has no single farm-sanctuary records law').first()).toBeVisible();
+  await expect(page.getByText('We found no Nebraska records law written for farm-animal rescues').first()).toBeVisible();
 
   await pickSpecies(page, 'Duck');
   await expect(page.getByLabel('Scrapie tag #')).toHaveCount(0);
@@ -137,4 +137,25 @@ test('v2 sample screenshots', async ({ page }) => {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download image' }).click()]);
   await dl.saveAs(`${OUT}/v2-share-jasper.png`);
   expect(fs.readFileSync(`${OUT}/v2-share-jasper.png`).subarray(1, 4).toString('latin1')).toBe('PNG');
+});
+
+test('horse height is hands.inches: 14.4 is rejected with a visible message, 14.2 saves unchanged', async ({ page }) => {
+  await newIntake(page, 'Dobbin', 'Horse');
+  const h = page.getByLabel('Height (hands)');
+  await expect(h).toHaveAttribute('step', '0.1');
+  await h.fill('14.4');
+  await page.getByRole('button', { name: 'Save intake' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Height is hands.inches' })).toBeVisible();
+  await expect(page).toHaveURL(/#\/new/);
+  await h.fill('14.2');
+  await page.getByRole('button', { name: 'Save intake' }).click();
+  await expect(page).toHaveURL(/#\/animal\//);
+  expect((await stored(page, 'Dobbin')).story.height_hands).toBeCloseTo(14.2, 5);
+});
+
+test('farm intake hides the "own ID" line; dog intake keeps it', async ({ page }) => {
+  await newIntake(page, 'Gus', 'Goat');
+  await expect(page.getByText('Each animal needs its own ID.')).toHaveCount(0);
+  await pickSpecies(page, 'Dog');
+  await expect(page.getByText('Each animal needs its own ID.')).toBeVisible();
 });

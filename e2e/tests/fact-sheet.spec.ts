@@ -64,3 +64,21 @@ test('unknown id shows not-found', async ({ page }) => {
   await page.goto('/#/animal/nope/sheet');
   await expect(page.getByRole('heading', { name: "We couldn't find that animal" })).toBeVisible();
 });
+
+test('Puddles sheet names the species; Clover sheet names Goat and her horns', async ({ page }) => {
+  await page.goto('/#/animal/sample-puddles/sheet');
+  await expect(page.locator('.ribbon')).toHaveText('Puddles');
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  const kind = page.locator('.sheet dt', { hasText: 'Kind' });
+  await expect(kind).toBeVisible();
+  await expect(kind.locator('xpath=following-sibling::dd[1]')).toHaveText('Duck');
+  await page.screenshot({ path: `${OUT}/v2fix-sheet-puddles-1280.png`, fullPage: true });
+
+  await page.goto('/#/animal/sample-clover/sheet');
+  await expect(page.locator('.ribbon')).toHaveText('Clover');
+  const sheet = page.locator('.sheet');
+  await expect(sheet.locator('dt', { hasText: 'Kind' }).locator('xpath=following-sibling::dd[1]')).toHaveText('Goat');
+  const horns = sheet.locator('dt', { hasText: 'Horns' });
+  await expect(horns).toBeVisible();
+  await expect(horns.locator('xpath=following-sibling::dd[1]')).toHaveText('Disbudded');
+});

@@ -356,6 +356,23 @@ impl Animal {
     }
 }
 
+pub const HEIGHT_HANDS_MSG: &str = "Height is hands.inches \u{2014} e.g. 14.2 (the number after the dot is 0\u{2013}3)";
+
+/// Parse a height typed in hands.inches ("14.2" = 14 hands 2 inches). Blank is fine (None);
+/// the single digit after the dot must be 0-3 because a hand is 4 inches. No rounding is done.
+pub fn parse_height_hands(input: &str) -> Result<Option<f32>, &'static str> {
+    let t = input.trim();
+    if t.is_empty() {
+        return Ok(None);
+    }
+    let (whole, frac) = t.split_once('.').unwrap_or((t, ""));
+    let digits = |x: &str| x.chars().all(|c| c.is_ascii_digit());
+    if whole.is_empty() || !digits(whole) || !digits(frac) || frac.len() > 1 || (t.contains('.') && frac.is_empty()) || frac.chars().any(|c| c > '3') {
+        return Err(HEIGHT_HANDS_MSG);
+    }
+    t.parse::<f32>().map(Some).map_err(|_| HEIGHT_HANDS_MSG)
+}
+
 /// Rescue-wide branding used in post text.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
@@ -404,6 +421,18 @@ mod tests {
             status: Status::Intake,
             status_changed_at: t,
             disposition: None,
+        }
+    }
+
+    #[test]
+    fn height_hands_validator() {
+        assert_eq!(parse_height_hands(""), Ok(None));
+        assert_eq!(parse_height_hands(" 14.2 "), Ok(Some(14.2)));
+        assert_eq!(parse_height_hands("15"), Ok(Some(15.0)));
+        assert_eq!(parse_height_hands("14.0"), Ok(Some(14.0)));
+        assert_eq!(parse_height_hands("14.3"), Ok(Some(14.3)));
+        for bad in ["14.4", "14.9", "14.25", "-1", ".2", "abc", "14.", "1e1"] {
+            assert_eq!(parse_height_hands(bad), Err(HEIGHT_HANDS_MSG), "{bad}");
         }
     }
 

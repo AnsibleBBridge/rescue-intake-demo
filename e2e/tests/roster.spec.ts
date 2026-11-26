@@ -77,3 +77,31 @@ test('Reset demo surfaces a save error when storage throws', async ({ page }) =>
   await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByText("Couldn't save the reset demo data")).toBeVisible();
 });
+
+test('v1 sample photo reference (biscuit.svg) still loads', async ({ page }) => {
+  await page.evaluate(([k]) => {
+    const ts = '2026-11-20T10:00:00';
+    localStorage.setItem(k as string, JSON.stringify({
+      version: 1,
+      animals: [{
+        id: 'v1-biscuit', name: 'Biscuit', species: 'Dog', sex: 'Male', received_at: ts,
+        source: null, out_of_state: false, health_certificate: null,
+        identification: { tag: null, cage_card: null, tattoo: null, microchip: null },
+        health: [],
+        story: {
+          breed: 'Lab mix', age_text: null, birth_date: null, color_markings: null, weight_lbs: null,
+          altered: 'Unknown', good_with_dogs: 'Yes', good_with_cats: 'Unknown', good_with_kids: 'Yes',
+          house_trained: 'Yes', energy: null, personality: null, special_needs: null, adoption_fee: null,
+        },
+        photo: 'assets/samples/biscuit.svg', status: 'Available', status_changed_at: ts, disposition: null,
+      }],
+      settings: { rescue_name: 'Your Rescue Name', phone: '', email: '', website: '', hashtags: [] },
+    }));
+  }, [KEY]);
+  await page.reload();
+  const img = cards(page).filter({ hasText: 'Biscuit' }).locator('img').first();
+  await expect(img).toBeVisible();
+  await expect.poll(() => img.evaluate((e: HTMLImageElement) => e.naturalWidth)).toBeGreaterThan(0);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.screenshot({ path: '../.superpowers/sdd/2026-11-25-farm-animals-v2/v2fix-roster-v1seed-375.png', fullPage: true });
+});

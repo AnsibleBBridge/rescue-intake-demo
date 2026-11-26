@@ -20,7 +20,11 @@ fn detail_rows(a: &Animal) -> Vec<(&'static str, String)> {
         a.source.as_ref().map(|s| match s {
             Source::Person { name, address, drivers_license } => {
                 if drivers_license.trim().is_empty() {
-                    format!("{name}, {address} (no driver's license yet)")
+                    if matches!(a.species.family(), Family::Dog | Family::Cat) {
+                        format!("{name}, {address} (no driver's license yet)")
+                    } else {
+                        format!("{name}, {address}")
+                    }
                 } else {
                     format!("{name}, {address} (DL {drivers_license})")
                 }

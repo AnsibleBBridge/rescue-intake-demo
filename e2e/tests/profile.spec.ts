@@ -24,7 +24,7 @@ test('a 3-day-old dog shows red overdue items, and rabies is only a reminder', a
   await expect(page.locator('.ci.overdue').first()).toContainText('overdue by');
   // Dogs keep the 23 NAC 18 wording and don't get the farm note.
   await expect(page.getByRole('heading', { name: 'Records & reminders' })).toBeVisible();
-  await expect(page.getByText('Nebraska has no single farm-sanctuary records law')).toHaveCount(0);
+  await expect(page.getByText('We found no Nebraska records law written for farm-animal rescues')).toHaveCount(0);
 });
 
 test('editing the dog to add a driver license turns the source item green', async ({ page }) => {
