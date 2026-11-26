@@ -49,6 +49,7 @@ mod tests {
             id: "a1".into(),
             name: "Biscuit".into(),
             species: Species::Dog,
+            species_other: None,
             sex: Sex::Male,
             received_at: dt(1),
             source: Some(Source::Person {
@@ -58,6 +59,9 @@ mod tests {
             }),
             out_of_state: false,
             health_certificate: None,
+            ownership_doc: None,
+            coggins: None,
+            scrapie_tag: None,
             identification: Identification {
                 tag: None,
                 cage_card: Some("C-4".into()),
@@ -109,5 +113,57 @@ mod tests {
         assert!(!id.has_any());
         id.tag = Some("T1".into());
         assert!(id.has_any());
+    }
+
+    #[test]
+    fn v1_blob_still_loads() {
+        // Literal v1 shape: no species_other / coggins / scrapie / transfer_doc / new story fields.
+        let v1 = r##"{"version":1,"animals":[{"id":"a1","name":"Rex","species":"Dog","sex":"Male",
+            "received_at":"2026-03-01T09:30:00","source":null,"out_of_state":false,
+            "health_certificate":null,"identification":{"tag":null,"cage_card":null,"tattoo":null,"microchip":null},
+            "health":[],"story":{"breed":null,"age_text":null,"birth_date":null,"color_markings":null,
+            "weight_lbs":null,"altered":"Unknown","good_with_dogs":"Unknown","good_with_cats":"Unknown",
+            "good_with_kids":"Unknown","house_trained":"Unknown","energy":null,"personality":null,
+            "special_needs":null,"adoption_fee":null},"photo":null,"status":"Outcome",
+            "status_changed_at":"2026-03-02T09:30:00",
+            "disposition":{"date":null,"method":"Adopted","recipient_name":null,"recipient_address":null,
+            "circumstances":null,"euthanasia_by":null,"euthanasia_method":null}}],
+            "settings":{"rescue_name":"R","phone":"1","email":"e","website":"","hashtags":["#AdoptDontShop"]}}"##;
+        let d = StoreData::from_json(v1).unwrap();
+        let a = &d.animals[0];
+        assert_eq!(a.species, Species::Dog);
+        assert!(a.species_other.is_none() && a.coggins.is_none() && a.scrapie_tag.is_none() && a.ownership_doc.is_none());
+        assert!(a.story.horns.is_none() && a.story.housing.is_none() && a.story.height_hands.is_none());
+        assert_eq!(a.story.rideable, YesNoUnknown::Unknown);
+        assert_eq!(a.story.layer, YesNoUnknown::Unknown);
+        assert_eq!(a.story.good_with_other_animals, YesNoUnknown::Unknown);
+        assert!(a.disposition.as_ref().unwrap().transfer_doc.is_none());
+    }
+
+    #[test]
+    fn round_trip_with_v2_fields() {
+        let mut data = sample();
+        let a = &mut data.animals[0];
+        a.species = Species::Goat;
+        a.scrapie_tag = Some("NE-123".into());
+        a.coggins = Some(Coggins {
+            date: NaiveDate::from_ymd_opt(2026, 2, 1),
+            lab: Some("Lab A".into()),
+            result: Some("Negative".into()),
+        });
+        a.story.horns = Some(Horns::Polled);
+        a.story.housing = Some(Housing::Either);
+        a.story.height_hands = Some(14.2);
+        a.disposition = Some(Disposition {
+            date: None,
+            method: OutcomeMethod::Adopted,
+            recipient_name: None,
+            recipient_address: None,
+            circumstances: None,
+            euthanasia_by: None,
+            euthanasia_method: None,
+            transfer_doc: Some("BOS-9".into()),
+        });
+        assert_eq!(StoreData::from_json(&data.to_json()).unwrap(), data);
     }
 }

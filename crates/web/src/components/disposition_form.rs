@@ -35,6 +35,7 @@ pub fn DispositionForm(
         circumstances: None,
         euthanasia_by: None,
         euthanasia_method: None,
+        transfer_doc: None,
     });
     let sig = |v: &Option<String>| RwSignal::new(v.clone().unwrap_or_default());
     let method = RwSignal::new(d.method);
@@ -57,6 +58,7 @@ pub fn DispositionForm(
             circumstances: if !recipient { opt(&circ.get_untracked()) } else { None },
             euthanasia_by: if euth { opt(&by.get_untracked()) } else { None },
             euthanasia_method: if euth { opt(&how.get_untracked()) } else { None },
+            transfer_doc: d.transfer_doc.clone(),
         });
     };
 

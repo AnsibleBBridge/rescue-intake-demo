@@ -55,13 +55,6 @@ fn text(o: &Option<String>) -> Option<&str> {
     o.as_deref().map(str::trim).filter(|s| !s.is_empty())
 }
 
-fn species_word(s: Species) -> &'static str {
-    match s {
-        Species::Dog => "dog",
-        Species::Cat => "cat",
-    }
-}
-
 /// Label/value pairs for the fact sheet and share image; unknowns are skipped.
 pub fn fact_lines(animal: &Animal) -> Vec<(&'static str, String)> {
     let s = &animal.story;
@@ -154,7 +147,7 @@ fn blocks(parts: Vec<String>) -> String {
 
 /// "a Lab mix" / "a dog" style noun phrase for the animal.
 fn kind_phrase(animal: &Animal) -> String {
-    let word = text(&animal.story.breed).map(str::to_string).unwrap_or_else(|| species_word(animal.species).to_string());
+    let word = text(&animal.story.breed).map(str::to_string).unwrap_or_else(|| animal.noun());
     let article = if word.chars().next().is_some_and(|c| "aeiouAEIOU".contains(c)) { "an" } else { "a" };
     format!("{article} {word}")
 }
@@ -235,11 +228,15 @@ mod tests {
             id: "a".into(),
             name: "Biscuit".into(),
             species: Species::Dog,
+            species_other: None,
             sex,
             received_at: t,
             source: None,
             out_of_state: false,
             health_certificate: None,
+            ownership_doc: None,
+            coggins: None,
+            scrapie_tag: None,
             identification: Identification::default(),
             health: vec![],
             story: Story::default(),

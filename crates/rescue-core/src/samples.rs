@@ -27,11 +27,15 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
         id: "sample-biscuit".into(),
         name: "Biscuit".into(),
         species: Species::Dog,
+        species_other: None,
         sex: Sex::Male,
         received_at: days(10),
         source: person("Dana Whitfield", "412 Elm St, Lincoln, NE 68502", "N12345678"),
         out_of_state: false,
         health_certificate: None,
+        ownership_doc: None,
+        coggins: None,
+        scrapie_tag: None,
         identification: Identification {
             cage_card: s("K-14"),
             microchip: Some(chip("985112003456789")),
@@ -67,11 +71,15 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
         id: "sample-pepper".into(),
         name: "Pepper".into(),
         species: Species::Cat,
+        species_other: None,
         sex: Sex::Female,
         received_at: days(3),
         source: person("Marcus Bell", "88 Oak Ave, Omaha, NE 68104", ""),
         out_of_state: false,
         health_certificate: None,
+        ownership_doc: None,
+        coggins: None,
+        scrapie_tag: None,
         identification: Identification { cage_card: s("C-03"), ..Default::default() },
         health: vec![health(3, HealthKind::Treatment, "Flea treatment")],
         story: Story {
@@ -94,6 +102,7 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
         id: "sample-moose".into(),
         name: "Moose".into(),
         species: Species::Dog,
+        species_other: None,
         sex: Sex::Male,
         received_at: days(30),
         source: Some(Source::Agency {
@@ -103,6 +112,9 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
         }),
         out_of_state: false,
         health_certificate: None,
+        ownership_doc: None,
+        coggins: None,
+        scrapie_tag: None,
         identification: Identification { tag: s("T-5521"), microchip: Some(chip("985112009876543")), ..Default::default() },
         health: vec![
             HealthEntry { rabies_certificate: s("RC-2105"), ..health(29, HealthKind::RabiesVaccination, "Rabies vaccine, 3 year") },
@@ -131,6 +143,7 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
             circumstances: None,
             euthanasia_by: None,
             euthanasia_method: None,
+            transfer_doc: None,
         }),
     };
 

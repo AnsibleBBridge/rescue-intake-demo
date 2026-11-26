@@ -7,16 +7,76 @@ pub type AnimalId = String;
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Species {
+    Horse,
+    Donkey,
+    Goat,
+    Sheep,
+    Chicken,
+    Duck,
+    Goose,
+    Rabbit,
+    GuineaPig,
     Dog,
     Cat,
+    Other,
+}
+
+/// Groups species that share record-keeping rules and form fields.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Family {
+    Equine,
+    SmallRuminant,
+    Poultry,
+    SmallMammal,
+    Dog,
+    Cat,
+    Other,
 }
 
 impl Species {
+    /// Display / select order (farm animals first, dogs and cats are occasional).
+    pub const ALL: [Species; 12] = [
+        Species::Horse,
+        Species::Donkey,
+        Species::Goat,
+        Species::Sheep,
+        Species::Chicken,
+        Species::Duck,
+        Species::Goose,
+        Species::Rabbit,
+        Species::GuineaPig,
+        Species::Dog,
+        Species::Cat,
+        Species::Other,
+    ];
+
     /// Display name (kept separate from `Debug` so UI text never depends on derive output).
     pub fn label(&self) -> &'static str {
         match self {
+            Species::Horse => "Horse",
+            Species::Donkey => "Donkey",
+            Species::Goat => "Goat",
+            Species::Sheep => "Sheep",
+            Species::Chicken => "Chicken",
+            Species::Duck => "Duck",
+            Species::Goose => "Goose",
+            Species::Rabbit => "Rabbit",
+            Species::GuineaPig => "Guinea pig",
             Species::Dog => "Dog",
             Species::Cat => "Cat",
+            Species::Other => "Other",
+        }
+    }
+
+    pub fn family(&self) -> Family {
+        match self {
+            Species::Horse | Species::Donkey => Family::Equine,
+            Species::Goat | Species::Sheep => Family::SmallRuminant,
+            Species::Chicken | Species::Duck | Species::Goose => Family::Poultry,
+            Species::Rabbit | Species::GuineaPig => Family::SmallMammal,
+            Species::Dog => Family::Dog,
+            Species::Cat => Family::Cat,
+            Species::Other => Family::Other,
         }
     }
 }
@@ -161,6 +221,51 @@ pub struct Disposition {
     pub circumstances: Option<String>,
     pub euthanasia_by: Option<String>,
     pub euthanasia_method: Option<String>,
+    /// Bill of sale / adoption contract reference (v1 data lacks it).
+    #[serde(default)]
+    pub transfer_doc: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum Horns {
+    Horned,
+    Polled,
+    Disbudded,
+}
+
+impl Horns {
+    pub fn label(&self) -> &'static str {
+        match self {
+            Horns::Horned => "Horned",
+            Horns::Polled => "Polled",
+            Horns::Disbudded => "Disbudded",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum Housing {
+    Indoor,
+    Outdoor,
+    Either,
+}
+
+impl Housing {
+    pub fn label(&self) -> &'static str {
+        match self {
+            Housing::Indoor => "Indoor",
+            Housing::Outdoor => "Outdoor",
+            Housing::Either => "Indoor or outdoor",
+        }
+    }
+}
+
+/// Equine Coggins (EIA) test record.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct Coggins {
+    pub date: Option<NaiveDate>,
+    pub lab: Option<String>,
+    pub result: Option<String>,
 }
 
 /// Adopter-facing details used for the adoption post text.
@@ -183,6 +288,19 @@ pub struct Story {
     pub personality: Option<String>,
     pub special_needs: Option<String>,
     pub adoption_fee: Option<u32>,
+    // Per-species facts; all optional so v1 data still loads.
+    #[serde(default)]
+    pub height_hands: Option<f32>,
+    #[serde(default)]
+    pub rideable: YesNoUnknown,
+    #[serde(default)]
+    pub horns: Option<Horns>,
+    #[serde(default)]
+    pub layer: YesNoUnknown,
+    #[serde(default)]
+    pub housing: Option<Housing>,
+    #[serde(default)]
+    pub good_with_other_animals: YesNoUnknown,
 }
 
 /// Times are naive: the web layer supplies local time, core never reads a clock.
@@ -191,11 +309,21 @@ pub struct Animal {
     pub id: AnimalId,
     pub name: String,
     pub species: Species,
+    /// Free-text kind when `species` is Other (e.g. "Llama").
+    #[serde(default)]
+    pub species_other: Option<String>,
     pub sex: Sex,
     pub received_at: NaiveDateTime,
     pub source: Option<Source>,
     pub out_of_state: bool,
     pub health_certificate: Option<String>,
+    /// Proof of ownership / surrender form reference.
+    #[serde(default)]
+    pub ownership_doc: Option<String>,
+    #[serde(default)]
+    pub coggins: Option<Coggins>,
+    #[serde(default)]
+    pub scrapie_tag: Option<String>,
     pub identification: Identification,
     pub health: Vec<HealthEntry>,
     pub story: Story,
@@ -203,6 +331,29 @@ pub struct Animal {
     pub status: Status,
     pub status_changed_at: NaiveDateTime,
     pub disposition: Option<Disposition>,
+}
+
+impl Animal {
+    /// Lowercase kind for sentences: "goat", "guinea pig", or the free-text kind for Other.
+    pub fn noun(&self) -> String {
+        match self.species {
+            Species::Other => self
+                .species_other
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_lowercase)
+                .unwrap_or_else(|| "animal".to_string()),
+            sp => sp.label().to_lowercase(),
+        }
+    }
+
+    /// Capitalized kind for display: "Goat", "Llama", "Animal".
+    pub fn kind_label(&self) -> String {
+        let n = self.noun();
+        let mut c = n.chars();
+        c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
+    }
 }
 
 /// Rescue-wide branding used in post text.
@@ -222,7 +373,62 @@ impl Default for Settings {
             phone: "(402) 555-0100".into(),
             email: "adopt@example.org".into(),
             website: String::new(),
-            hashtags: vec!["#AdoptDontShop".into(), "#NebraskaRescue".into()],
+            hashtags: vec!["#FarmAnimalRescue".into(), "#AdoptDontShop".into(), "#NebraskaRescue".into()],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn bare(species: Species, other: Option<&str>) -> Animal {
+        let t = NaiveDate::from_ymd_opt(2026, 11, 20).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        Animal {
+            id: "a".into(),
+            name: "X".into(),
+            species,
+            species_other: other.map(Into::into),
+            sex: Sex::Unknown,
+            received_at: t,
+            source: None,
+            out_of_state: false,
+            health_certificate: None,
+            ownership_doc: None,
+            coggins: None,
+            scrapie_tag: None,
+            identification: Identification::default(),
+            health: vec![],
+            story: Story::default(),
+            photo: None,
+            status: Status::Intake,
+            status_changed_at: t,
+            disposition: None,
+        }
+    }
+
+    #[test]
+    fn noun_and_label() {
+        let a = bare(Species::GuineaPig, None);
+        assert_eq!((a.noun(), a.kind_label()), ("guinea pig".into(), "Guinea pig".into()));
+        let a = bare(Species::Other, Some("Llama"));
+        assert_eq!((a.noun(), a.kind_label()), ("llama".into(), "Llama".into()));
+        let a = bare(Species::Other, Some("  "));
+        assert_eq!((a.noun(), a.kind_label()), ("animal".into(), "Animal".into()));
+        assert_eq!(Species::GuineaPig.label(), "Guinea pig");
+        assert_eq!(Species::ALL.len(), 12);
+    }
+
+    #[test]
+    fn family_mapping() {
+        use Family::*;
+        let f = |s: Species| s.family();
+        assert_eq!((f(Species::Horse), f(Species::Donkey)), (Equine, Equine));
+        assert_eq!((f(Species::Goat), f(Species::Sheep)), (SmallRuminant, SmallRuminant));
+        for s in [Species::Chicken, Species::Duck, Species::Goose] {
+            assert_eq!(f(s), Poultry);
+        }
+        assert_eq!((f(Species::Rabbit), f(Species::GuineaPig)), (SmallMammal, SmallMammal));
+        assert_eq!((f(Species::Dog), f(Species::Cat), f(Species::Other)), (Dog, Cat, Other));
     }
 }

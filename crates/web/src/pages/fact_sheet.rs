@@ -69,7 +69,8 @@ pub fn contact_text(s: &Settings) -> String {
 pub fn sil_path(species: Species) -> &'static str {
     match species {
         Species::Cat => "M22 14 L40 32 Q50 29 60 32 L78 14 L80 48 Q86 60 78 74 Q66 90 50 90 Q34 90 22 74 Q14 60 20 48 Z",
-        Species::Dog => "M26 24 Q38 22 42 34 Q50 32 58 34 Q62 22 74 24 Q88 30 82 56 Q76 52 74 46 Q76 70 62 82 Q50 92 38 82 Q24 70 26 46 Q24 52 18 56 Q12 30 26 24 Z",
+        // Interim: every non-cat species uses the dog outline until the UI rework (Task 4).
+        _ => "M26 24 Q38 22 42 34 Q50 32 58 34 Q62 22 74 24 Q88 30 82 56 Q76 52 74 46 Q76 70 62 82 Q50 92 38 82 Q24 70 26 46 Q24 52 18 56 Q12 30 26 24 Z",
     }
 }
 
@@ -81,7 +82,7 @@ fn silhouette(species: Species) -> impl IntoView {
                 <path d="M22 14 L40 32 Q50 29 60 32 L78 14 L80 48 Q86 60 78 74 Q66 90 50 90 Q34 90 22 74 Q14 60 20 48 Z" fill="currentColor"/>
             </svg>
         }.into_any(),
-        Species::Dog => view! {
+        _ => view! {
             <svg class="sil" viewBox="0 0 100 100" aria-hidden="true">
                 <path d="M26 24 Q38 22 42 34 Q50 32 58 34 Q62 22 74 24 Q88 30 82 56 Q76 52 74 46 Q76 70 62 82 Q50 92 38 82 Q24 70 26 46 Q24 52 18 56 Q12 30 26 24 Z" fill="currentColor"/>
             </svg>

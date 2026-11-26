@@ -127,11 +127,15 @@ mod tests {
             id: "a1".into(),
             name: "Test".into(),
             species: Species::Dog,
+            species_other: None,
             sex: Sex::Male,
             received_at: dt(20, 10),
             source: None,
             out_of_state: false,
             health_certificate: None,
+            ownership_doc: None,
+            coggins: None,
+            scrapie_tag: None,
             identification: Identification::default(),
             health: vec![],
             story: Story::default(),
@@ -204,6 +208,7 @@ mod tests {
             circumstances: Some("Severe injury".into()),
             euthanasia_by: None,
             euthanasia_method: None,
+            transfer_doc: None,
         };
         a.disposition = Some(d.clone());
         assert!(matches!(state_of(&check(&a, dt(21, 12)), "disposition"), ItemState::Open { .. }));

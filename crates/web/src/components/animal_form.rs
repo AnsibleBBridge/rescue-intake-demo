@@ -230,6 +230,8 @@ pub fn AnimalForm(
             personality: opt(&personality.get_untracked()),
             special_needs: opt(&special.get_untracked()),
             adoption_fee: fee.get_untracked().trim().parse().ok(),
+            // Per-species fields have no form controls yet (Task 4); keep stored values.
+            ..a.story.clone()
         };
         a.photo = photo.get_untracked();
         on_save.run(a);
