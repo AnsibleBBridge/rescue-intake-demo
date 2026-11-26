@@ -1,0 +1,8 @@
+[build]
+target = "index.html"
+dist = "dist"
+# Relative URLs so the site works under /rescue-intake-demo/ on GitHub Pages.
+public_url = "./"
+
+[serve]
+port = 8080

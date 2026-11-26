@@ -1,4 +1,4 @@
 [workspace]
-# crates/web is added in Task 5.
-members = ["crates/rescue-core"]
+
+members = ["crates/rescue-core", "crates/web"]
 resolver = "2"
