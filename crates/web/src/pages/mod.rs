@@ -1,3 +1,4 @@
+pub mod intake;
 pub mod roster;
 
 use crate::app::Route;

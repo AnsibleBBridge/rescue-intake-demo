@@ -86,8 +86,7 @@ impl AppState {
         self.data.with_untracked(|d| store.save(d))
     }
 
-    /// Insert or replace by id, then save. Used by the intake form (Task 6).
-    #[allow(dead_code)]
+    /// Insert or replace by id, then save. Used by the intake form.
     pub fn upsert(&self, a: Animal) -> Result<(), String> {
         self.data.update(|d| match d.animals.iter_mut().find(|x| x.id == a.id) {
             Some(slot) => *slot = a,

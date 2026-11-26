@@ -8,5 +8,10 @@ rescue-core = { path = "../rescue-core" }
 leptos = { version = "0.8", features = ["csr"] }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
 js-sys = "0.3"
-web-sys = { version = "0.3", features = ["Window", "Storage", "Location", "Event"] }
+web-sys = { version = "0.3", features = [
+    "Window", "Storage", "Location", "Event", "Document", "Element", "File", "FileList",
+    "Blob", "HtmlInputElement", "HtmlCanvasElement", "CanvasRenderingContext2d", "ImageBitmap",
+] }
+wasm-bindgen-futures = "0.4"
+uuid = { version = "1", features = ["v4", "js"] }
 wasm-bindgen = "0.2"

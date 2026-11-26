@@ -1,6 +1,8 @@
 mod app;
 mod clock;
+mod components;
 mod pages;
+mod photo;
 mod store;
 
 fn main() {

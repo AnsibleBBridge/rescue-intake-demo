@@ -285,8 +285,7 @@ mod tests {
 
     #[test]
     fn contact_line_drops_empty_website() {
-        let mut s = Settings::default();
-        s.rescue_name = "Prairie Paws".into();
+        let mut s = Settings { rescue_name: "Prairie Paws".into(), ..Settings::default() };
         assert_eq!(contact_line(&s), "Contact Prairie Paws: (402) 555-0100 · adopt@example.org");
         s.website = "prairiepaws.org".into();
         assert!(contact_line(&s).ends_with("· prairiepaws.org"));
