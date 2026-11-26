@@ -164,7 +164,7 @@ Profile shows photo, details, status stepper (clickable pills; changing status s
 
 **Files:** Create `src/pages/fact_sheet.rs`; add `@media print` rules to `style.css`
 
-Layout follows the rescue's reference `docs/reference/fact-sheet-reference.jpg` (look at it), in our own styling — do not copy the template's artwork: soft pastel palette, rounded cards.
+Layout follows the rescue's reference `.superpowers/reference/fact-sheet-reference.jpg (private copy; third-party template screenshot, not published)` (look at it), in our own styling — do not copy the template's artwork: soft pastel palette, rounded cards.
 - Title band: "Pet Profile" + rescue name.
 - Row: **Overview** card (label/value list from `fact_lines`, plus Sex, Weight, Size potential) beside a **large circular photo** (`border-radius:50%; object-fit:cover`; species placeholder SVG if none) with the animal's name on a ribbon/banner overlapping the bottom of the circle.
 - **Background** card: personality paragraph, good-with notes, special needs, fee.
