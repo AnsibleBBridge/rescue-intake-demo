@@ -113,9 +113,16 @@ pub fn FactSheet(id: String) -> impl IntoView {
                         <div class="sheet-top">
                             <section class="sheet-card">
                                 <h2>"Overview"</h2>
-                                <dl class="sheet-dl">
-                                    {rows.into_iter().map(|(k, v)| view! { <dt>{k}</dt><dd>{v}</dd> }).collect_view()}
-                                </dl>
+                                {if rows.is_empty() {
+                                    // Nothing known yet: a gentle line beats an empty card.
+                                    view! { <p class="sheet-soon">"Details coming soon."</p> }.into_any()
+                                } else {
+                                    view! {
+                                        <dl class="sheet-dl">
+                                            {rows.into_iter().map(|(k, v)| view! { <dt>{k}</dt><dd>{v}</dd> }).collect_view()}
+                                        </dl>
+                                    }.into_any()
+                                }}
                             </section>
                             <div class="sheet-photo">
                                 <div class="circle">{photo}</div>

@@ -11,6 +11,16 @@ pub enum Species {
     Cat,
 }
 
+impl Species {
+    /// Display name (kept separate from `Debug` so UI text never depends on derive output).
+    pub fn label(&self) -> &'static str {
+        match self {
+            Species::Dog => "Dog",
+            Species::Cat => "Cat",
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Sex {
     Male,

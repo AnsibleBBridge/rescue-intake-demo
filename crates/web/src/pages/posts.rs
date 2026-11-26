@@ -59,13 +59,16 @@ pub fn Posts(id: String) -> impl IntoView {
     let animal = Memo::new(move |_| state.data.with(|d| d.animals.iter().find(|a| a.id == id).cloned()));
     let canvas = NodeRef::<Canvas>::new();
     let error = RwSignal::new(None::<String>);
+    // Mirrors the canvas's `data-ready` attribute so the button can react to it.
+    let ready = RwSignal::new(false);
 
     // Re-render the image whenever the animal (or branding) changes; runs after the canvas mounts.
     Effect::new(move |_| {
         let (Some(c), Some(a)) = (canvas.get(), animal.get()) else { return };
         let settings = state.data.with(|d| d.settings.clone());
         error.set(None);
-        if let Err(e) = share_image::render_with(&c, &a, &settings, move |e| error.set(Some(e))) {
+        ready.set(false);
+        if let Err(e) = share_image::render_with(&c, &a, &settings, move |e| error.set(Some(e)), move || ready.set(true)) {
             error.set(Some(format!("Couldn't draw the share image: {e}")));
         }
     });
@@ -110,7 +113,9 @@ pub fn Posts(id: String) -> impl IntoView {
                         <h2>"Share image"</h2>
                         <canvas node_ref=canvas class="share-canvas" aria-label=format!("Share image for {}", a.name)></canvas>
                         {move || error.get().map(|e| view! { <p class="notice" role="alert">{e}</p> })}
-                        <button type="button" class="btn primary" on:click=download>"Download image"</button>
+                        <button type="button" class="btn primary" on:click=download prop:disabled=move || !ready.get()>
+                            {move || if ready.get() { "Download image" } else { "Preparing image\u{2026}" }}
+                        </button>
                     </section>
                 }.into_any()
             }

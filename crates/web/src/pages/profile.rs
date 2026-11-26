@@ -128,7 +128,7 @@ pub fn Profile(id: String) -> impl IntoView {
                     <section class="profile-head">
                         <div class="photo hero">{photo}</div>
                         <h1>{a.name.clone()}</h1>
-                        <p class="sub">{format!("{:?} · {breed}", a.species)}</p>
+                        <p class="sub">{format!("{} · {breed}", a.species.label())}</p>
                         <span class=crate::pages::roster::status_class(a.status)>{a.status.label()}</span>
                     </section>
                     {move || save_error.get().filter(|_| !editing.get()).map(|e| view! { <p class="notice" role="alert">{e}</p> })}

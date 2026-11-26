@@ -177,7 +177,7 @@ fn draw(ctx: &CanvasRenderingContext2d, a: &Animal, s: &Settings, photo: Option<
 }
 
 /// Render the share image. Sync errors are returned; photo-load paths report through `on_error`.
-pub fn render_with(canvas: &HtmlCanvasElement, a: &Animal, s: &Settings, on_error: impl Fn(String) + 'static) -> Result<(), String> {
+pub fn render_with(canvas: &HtmlCanvasElement, a: &Animal, s: &Settings, on_error: impl Fn(String) + 'static, on_ready: impl Fn() + 'static) -> Result<(), String> {
     canvas.set_width(SIZE);
     canvas.set_height(SIZE);
     let ctx: CanvasRenderingContext2d = canvas
@@ -189,6 +189,7 @@ pub fn render_with(canvas: &HtmlCanvasElement, a: &Animal, s: &Settings, on_erro
     let Some(src) = a.photo.clone() else {
         draw(&ctx, a, s, None)?;
         let _ = canvas.set_attribute("data-ready", "1");
+        on_ready();
         return Ok(());
     };
     // Same-origin SVG / data URL, so the canvas stays untainted and exportable.
@@ -200,7 +201,10 @@ pub fn render_with(canvas: &HtmlCanvasElement, a: &Animal, s: &Settings, on_erro
             return;
         }
         match draw(&ctx2, &a, &s, loaded.then_some(&img2)) {
-            Ok(()) => { let _ = canvas.set_attribute("data-ready", "1"); }
+            Ok(()) => {
+                let _ = canvas.set_attribute("data-ready", "1");
+                on_ready();
+            }
             Err(e) => on_error(e),
         }
     };
@@ -217,7 +221,7 @@ pub fn render_with(canvas: &HtmlCanvasElement, a: &Animal, s: &Settings, on_erro
 /// Interface form of `render`; late photo failures are logged (the page uses `render_with`).
 #[allow(dead_code)]
 pub fn render(canvas: &HtmlCanvasElement, a: &Animal, s: &Settings) -> Result<(), String> {
-    render_with(canvas, a, s, |e| leptos::logging::error!("share image: {e}"))
+    render_with(canvas, a, s, |e| leptos::logging::error!("share image: {e}"), || {})
 }
 
 #[cfg(test)]

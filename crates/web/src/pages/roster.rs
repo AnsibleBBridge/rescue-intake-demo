@@ -93,7 +93,7 @@ pub fn Roster() -> impl IntoView {
 fn card(a: Animal) -> impl IntoView {
     let link = href(&Route::Animal(a.id.clone()));
     let breed = a.story.breed.clone().unwrap_or_else(|| "Unknown breed".into());
-    let species = format!("{:?}", a.species);
+    let species = a.species.label();
     let initial = a.name.chars().next().unwrap_or('?').to_string();
     let photo = match a.photo.clone() {
         Some(src) => view! { <img src=src alt=format!("Photo of {}", a.name) /> }.into_any(),
