@@ -11,6 +11,7 @@ js-sys = "0.3"
 web-sys = { version = "0.3", features = [
     "Window", "Storage", "Location", "Event", "Document", "Element", "File", "FileList",
     "Blob", "HtmlInputElement", "HtmlCanvasElement", "CanvasRenderingContext2d", "ImageBitmap",
+    "HtmlImageElement", "HtmlTextAreaElement", "HtmlAnchorElement", "Path2d", "TextMetrics", "Navigator", "Clipboard",
 ] }
 wasm-bindgen-futures = "0.4"
 uuid = { version = "1", features = ["v4", "js"] }

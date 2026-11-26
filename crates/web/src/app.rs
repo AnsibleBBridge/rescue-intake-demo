@@ -71,6 +71,7 @@ pub fn App() -> impl IntoView {
                 Route::New => pages::intake::Intake().into_any(),
                 Route::Animal(id) => pages::profile::Profile(pages::profile::ProfileProps { id }).into_any(),
                 Route::Sheet(id) => pages::fact_sheet::FactSheet(pages::fact_sheet::FactSheetProps { id }).into_any(),
+                Route::Posts(id) => pages::posts::Posts(pages::posts::PostsProps { id }).into_any(),
                 other => pages::coming_soon(other).into_any(),
             }}
         </main>

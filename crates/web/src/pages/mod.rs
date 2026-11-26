@@ -1,5 +1,6 @@
 pub mod fact_sheet;
 pub mod intake;
+pub mod posts;
 pub mod profile;
 pub mod roster;
 

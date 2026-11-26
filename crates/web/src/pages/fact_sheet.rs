@@ -36,7 +36,7 @@ fn background(a: &Animal) -> Background {
 }
 
 /// Footer text with blank contact parts dropped; falls back to the rescue's name.
-fn contact_text(s: &Settings) -> String {
+pub fn contact_text(s: &Settings) -> String {
     let parts: Vec<&str> = [s.phone.trim(), s.email.trim()].into_iter().filter(|p| !p.is_empty()).collect();
     if parts.is_empty() {
         format!("Interested in adopting? Contact {}", s.rescue_name)
@@ -49,6 +49,14 @@ fn contact_text(s: &Settings) -> String {
             Some(second) => format!("{head} \u{b7} {second}"),
             None => head,
         }
+    }
+}
+
+/// Silhouette outline (100x100 viewBox), shared with the share-image canvas.
+pub fn sil_path(species: Species) -> &'static str {
+    match species {
+        Species::Cat => "M22 14 L40 32 Q50 29 60 32 L78 14 L80 48 Q86 60 78 74 Q66 90 50 90 Q34 90 22 74 Q14 60 20 48 Z",
+        Species::Dog => "M26 24 Q38 22 42 34 Q50 32 58 34 Q62 22 74 24 Q88 30 82 56 Q76 52 74 46 Q76 70 62 82 Q50 92 38 82 Q24 70 26 46 Q24 52 18 56 Q12 30 26 24 Z",
     }
 }
 

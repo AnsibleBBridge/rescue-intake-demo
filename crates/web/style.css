@@ -134,3 +134,12 @@ h2 { font-size: 1.1rem; margin: 8px 0 0; }
   .sheet { box-shadow: none; border-radius: 0; break-inside: avoid; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Social posts page */
+.posts { display: grid; gap: 16px; margin: 12px 0 16px; }
+.post-card h2 { margin: 0 0 8px; }
+.post-text { width: 100%; min-height: 140px; padding: 10px 12px; font: inherit; color: var(--ink); background: var(--card); border: 2px solid var(--band); border-radius: 12px; resize: vertical; }
+.post-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.post-status { font-weight: 700; color: var(--accent); }
+.share-card h2 { margin: 0 0 8px; }
+.share-canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; max-width: 540px; margin: 0 auto 12px; border-radius: 12px; background: #eef2fd; }
