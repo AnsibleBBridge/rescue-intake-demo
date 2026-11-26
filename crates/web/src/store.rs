@@ -48,9 +48,9 @@ impl Store for LocalStore {
 /// Three demo animals with bundled (relative-URL) photos.
 pub fn fresh_samples() -> StoreData {
     let photos = [
-        Some("assets/samples/biscuit.svg".to_string()),
-        Some("assets/samples/pepper.svg".to_string()),
-        Some("assets/samples/moose.svg".to_string()),
+        Some("assets/samples/clover.svg".to_string()),
+        Some("assets/samples/jasper.svg".to_string()),
+        Some("assets/samples/puddles.svg".to_string()),
     ];
     StoreData {
         version: SCHEMA_VERSION,

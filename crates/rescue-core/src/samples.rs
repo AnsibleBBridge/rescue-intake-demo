@@ -6,8 +6,9 @@ fn s(v: &str) -> Option<String> {
     Some(v.to_string())
 }
 
-/// Three animals in different states: Biscuit (all records done), Pepper (overdue items),
-/// Moose (adopted). `photos` are relative asset URLs, in that order.
+/// Three farm animals in different states: Clover (goat, all records done), Jasper (donkey,
+/// out of state, still missing a Coggins and ownership paperwork) and Puddles (duck, adopted
+/// out). `photos` are relative asset URLs, in that order.
 pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<Animal> {
     let days = |n: i64| now - Duration::days(n);
     let health = |ago: i64, kind, desc: &str| HealthEntry {
@@ -21,75 +22,76 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
     let person = |name: &str, addr: &str, dl: &str| {
         Some(Source::Person { name: name.into(), address: addr.into(), drivers_license: dl.into() })
     };
-    let chip = |n: &str| Microchip { number: n.into(), manufacturer: s("HomeAgain"), location: s("Between shoulder blades") };
 
-    let biscuit = Animal {
-        id: "sample-biscuit".into(),
-        name: "Biscuit".into(),
-        species: Species::Dog,
+    let clover = Animal {
+        id: "sample-clover".into(),
+        name: "Clover".into(),
+        species: Species::Goat,
         species_other: None,
-        sex: Sex::Male,
-        received_at: days(10),
-        source: person("Dana Whitfield", "412 Elm St, Lincoln, NE 68502", "N12345678"),
+        sex: Sex::Female,
+        received_at: days(21),
+        source: person("Dana Whitfield", "412 Elm St, Lincoln, NE 68502", ""),
         out_of_state: false,
         health_certificate: None,
-        ownership_doc: None,
+        ownership_doc: s("Surrender form SF-114"),
         coggins: None,
-        scrapie_tag: None,
-        identification: Identification {
-            cage_card: s("K-14"),
-            microchip: Some(chip("985112003456789")),
-            ..Default::default()
-        },
+        scrapie_tag: s("NE-4471"),
+        identification: Identification { tag: s("Ear tag 12"), ..Default::default() },
         health: vec![
-            HealthEntry { rabies_certificate: s("RC-2291"), ..health(9, HealthKind::RabiesVaccination, "Rabies vaccine, 1 year") },
-            health(9, HealthKind::Vaccination, "DHPP booster"),
-            health(8, HealthKind::Procedure, "Neutered"),
+            health(20, HealthKind::Vaccination, "CD&T vaccine"),
+            health(14, HealthKind::Treatment, "Hoof trim and dewormer"),
         ],
         story: Story {
-            breed: s("Lab mix"),
-            age_text: s("~2 years"),
-            color_markings: s("Golden with a white chest"),
-            weight_lbs: Some(58.0),
+            breed: s("Nubian mix"),
+            age_text: s("~3 years"),
+            color_markings: s("White with tan ears"),
+            weight_lbs: Some(110.0),
             altered: YesNoUnknown::Yes,
-            good_with_dogs: YesNoUnknown::Yes,
+            horns: Some(Horns::Disbudded),
+            housing: Some(Housing::Outdoor),
             good_with_kids: YesNoUnknown::Yes,
-            house_trained: YesNoUnknown::Yes,
+            good_with_other_animals: YesNoUnknown::Yes,
             energy: Some(Energy::Medium),
-            personality: s("A goofy, food-motivated sweetheart who leans on your leg for pets."),
-            adoption_fee: Some(150),
+            personality: s("A curious, food-motivated sweetheart who follows you around the pasture."),
+            adoption_fee: Some(75),
             ..Default::default()
         },
         photo: photos[0].clone(),
         status: Status::Available,
-        status_changed_at: days(4),
+        status_changed_at: days(7),
         disposition: None,
     };
 
-    // Missing driver's license on purpose: past the 48h window it shows Overdue (rabies is only a reminder).
-    let pepper = Animal {
-        id: "sample-pepper".into(),
-        name: "Pepper".into(),
-        species: Species::Cat,
+    // Came from out of state with a CVI, but no Coggins or ownership paperwork yet: two reminders.
+    let jasper = Animal {
+        id: "sample-jasper".into(),
+        name: "Jasper".into(),
+        species: Species::Donkey,
         species_other: None,
-        sex: Sex::Female,
+        sex: Sex::Male,
         received_at: days(3),
-        source: person("Marcus Bell", "88 Oak Ave, Omaha, NE 68104", ""),
-        out_of_state: false,
-        health_certificate: None,
+        source: Some(Source::Agency {
+            agency: "Dawes County Sheriff".into(),
+            official_title: "Deputy".into(),
+            address: "451 Main St, Chadron, NE 69337".into(),
+        }),
+        out_of_state: true,
+        health_certificate: s("CVI-SD-20931"),
         ownership_doc: None,
         coggins: None,
         scrapie_tag: None,
-        identification: Identification { cage_card: s("C-03"), ..Default::default() },
-        health: vec![health(3, HealthKind::Treatment, "Flea treatment")],
+        identification: Identification::default(),
+        health: vec![health(2, HealthKind::Procedure, "Hoof trim")],
         story: Story {
-            breed: s("Domestic shorthair"),
-            age_text: s("~1 year"),
-            color_markings: s("Gray tabby"),
-            altered: YesNoUnknown::Unknown,
-            good_with_cats: YesNoUnknown::Yes,
-            energy: Some(Energy::High),
-            personality: s("Curious and playful, a little shy for the first few minutes."),
+            breed: s("Miniature donkey"),
+            age_text: s("~8 years"),
+            color_markings: s("Gray with a dark stripe down the back"),
+            height_hands: Some(10.2),
+            rideable: YesNoUnknown::No,
+            altered: YesNoUnknown::Yes,
+            good_with_other_animals: YesNoUnknown::Yes,
+            energy: Some(Energy::Low),
+            personality: s("Shy at first, then a total hugger with a very loud hello."),
             ..Default::default()
         },
         photo: photos[1].clone(),
@@ -98,38 +100,30 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
         disposition: None,
     };
 
-    let moose = Animal {
-        id: "sample-moose".into(),
-        name: "Moose".into(),
-        species: Species::Dog,
+    let puddles = Animal {
+        id: "sample-puddles".into(),
+        name: "Puddles".into(),
+        species: Species::Duck,
         species_other: None,
-        sex: Sex::Male,
+        sex: Sex::Female,
         received_at: days(30),
-        source: Some(Source::Agency {
-            agency: "Lancaster County Animal Control".into(),
-            official_title: "Animal Control Officer".into(),
-            address: "3140 N 35th St, Lincoln, NE 68504".into(),
-        }),
+        source: person("Marcus Bell", "88 Oak Ave, Omaha, NE 68104", ""),
         out_of_state: false,
         health_certificate: None,
-        ownership_doc: None,
+        ownership_doc: s("Surrender form SF-097"),
         coggins: None,
         scrapie_tag: None,
-        identification: Identification { tag: s("T-5521"), microchip: Some(chip("985112009876543")), ..Default::default() },
-        health: vec![
-            HealthEntry { rabies_certificate: s("RC-2105"), ..health(29, HealthKind::RabiesVaccination, "Rabies vaccine, 3 year") },
-            health(28, HealthKind::Procedure, "Neutered"),
-        ],
+        identification: Identification { cage_card: s("Pen 2"), ..Default::default() },
+        health: vec![health(29, HealthKind::Treatment, "Wing check, healthy")],
         story: Story {
-            breed: s("Great Pyrenees mix"),
-            age_text: s("~4 years"),
-            altered: YesNoUnknown::Yes,
-            good_with_dogs: YesNoUnknown::Yes,
-            good_with_cats: YesNoUnknown::Yes,
-            good_with_kids: YesNoUnknown::Yes,
-            energy: Some(Energy::Low),
-            personality: s("A gentle giant who loves lazy afternoons."),
-            adoption_fee: Some(200),
+            breed: s("Pekin"),
+            age_text: s("~1 year"),
+            color_markings: s("White with an orange bill"),
+            layer: YesNoUnknown::Yes,
+            housing: Some(Housing::Outdoor),
+            good_with_other_animals: YesNoUnknown::Yes,
+            personality: s("Loves a puddle, a kiddie pool, and a good muddy waddle."),
+            adoption_fee: Some(15),
             ..Default::default()
         },
         photo: photos[2].clone(),
@@ -143,11 +137,11 @@ pub fn sample_animals(now: NaiveDateTime, photos: &[Option<String>; 3]) -> Vec<A
             circumstances: None,
             euthanasia_by: None,
             euthanasia_method: None,
-            transfer_doc: None,
+            transfer_doc: s("Adoption contract AC-12"),
         }),
     };
 
-    vec![biscuit, pepper, moose]
+    vec![clover, jasper, puddles]
 }
 
 #[cfg(test)]
@@ -157,28 +151,31 @@ mod tests {
     use chrono::NaiveDate;
 
     #[test]
-    fn samples_cover_three_states() {
+    fn samples_farm_states() {
         let now = NaiveDate::from_ymd_opt(2026, 11, 25).unwrap().and_hms_opt(9, 0, 0).unwrap();
         let photos = [
-            Some("assets/samples/biscuit.svg".to_string()),
-            Some("assets/samples/pepper.svg".to_string()),
-            Some("assets/samples/moose.svg".to_string()),
+            Some("assets/samples/clover.svg".to_string()),
+            Some("assets/samples/jasper.svg".to_string()),
+            Some("assets/samples/puddles.svg".to_string()),
         ];
         let animals = sample_animals(now, &photos);
+        let species: Vec<Species> = animals.iter().map(|a| a.species).collect();
+        assert_eq!(species, vec![Species::Goat, Species::Donkey, Species::Duck]);
         let statuses: Vec<Status> = animals.iter().map(|a| a.status).collect();
         assert_eq!(statuses, vec![Status::Available, Status::VetCheck, Status::Outcome]);
-        assert_eq!(animals[0].photo.as_deref(), Some("assets/samples/biscuit.svg"));
+        assert_eq!(animals[0].photo.as_deref(), Some("assets/samples/clover.svg"));
 
-        let pepper = check(&animals[1], now);
-        assert!(pepper.iter().any(|i| matches!(i.state, ItemState::Overdue { .. })));
-        // Biscuit and Moose are fully documented: nothing pending.
-        for a in [&animals[0], &animals[2]] {
-            let bad = check(a, now)
+        let pending = |a: &Animal| {
+            check(a, now)
                 .into_iter()
-                .filter(|i| matches!(i.state, ItemState::Open { .. } | ItemState::Overdue { .. }))
+                .filter(|i| !matches!(i.state, ItemState::Done | ItemState::NotApplicable))
                 .map(|i| i.key)
-                .collect::<Vec<_>>();
-            assert!(bad.is_empty(), "{}: {bad:?}", a.name);
-        }
+                .collect::<Vec<_>>()
+        };
+        assert!(pending(&animals[0]).is_empty(), "{:?}", pending(&animals[0]));
+        assert!(pending(&animals[2]).is_empty(), "{:?}", pending(&animals[2]));
+        assert_eq!(pending(&animals[1]), vec!["ownership_doc", "coggins"]);
+        let jasper = check(&animals[1], now);
+        assert!(jasper.iter().any(|i| i.key == "cvi" && i.state == ItemState::Done));
     }
 }

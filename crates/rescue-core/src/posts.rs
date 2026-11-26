@@ -87,11 +87,31 @@ pub fn fact_lines(animal: &Animal) -> Vec<(&'static str, String)> {
     if let Some(v) = yn(s.altered) {
         out.push(("Spayed/neutered", v));
     }
+    // Per-species facts; each is skipped when unknown.
+    if let Some(h) = s.height_hands {
+        // Up to one decimal: 14.2 -> "14.2 hands", 15.0 -> "15 hands".
+        out.push(("Height", format!("{} hands", (h * 10.0).round() / 10.0)));
+    }
+    if let Some(h) = s.horns {
+        out.push(("Horns", h.label().to_string()));
+    }
+    if let Some(v) = yn(s.rideable) {
+        out.push(("Rideable", v));
+    }
+    if animal.species.family() == Family::Poultry {
+        if let Some(v) = yn(s.layer) {
+            out.push(("Lays eggs", v));
+        }
+    }
+    if let Some(h) = s.housing {
+        out.push(("Housing", h.label().to_string()));
+    }
     // Only positive compatibility is advertised.
     let good: Vec<&str> = [
         (s.good_with_dogs, "dogs"),
         (s.good_with_cats, "cats"),
         (s.good_with_kids, "kids"),
+        (s.good_with_other_animals, "other animals"),
     ]
     .iter()
     .filter(|(v, _)| *v == YesNoUnknown::Yes)
@@ -100,8 +120,11 @@ pub fn fact_lines(animal: &Animal) -> Vec<(&'static str, String)> {
     if !good.is_empty() {
         out.push(("Good with", good.join(", ")));
     }
-    if let Some(v) = yn(s.house_trained) {
-        out.push(("House-trained", v));
+    // House-training only means something for pets and house rabbits.
+    if matches!(animal.species, Species::Dog | Species::Cat | Species::Rabbit) {
+        if let Some(v) = yn(s.house_trained) {
+            out.push(("House-trained", v));
+        }
     }
     if let Some(e) = s.energy {
         out.push((
@@ -145,7 +168,7 @@ fn blocks(parts: Vec<String>) -> String {
     parts.into_iter().filter(|p| !p.trim().is_empty()).collect::<Vec<_>>().join("\n\n")
 }
 
-/// "a Lab mix" / "a dog" style noun phrase for the animal.
+/// "a Lab mix" / "a donkey" style noun phrase for the animal.
 fn kind_phrase(animal: &Animal) -> String {
     let word = text(&animal.story.breed).map(str::to_string).unwrap_or_else(|| animal.noun());
     let article = if word.chars().next().is_some_and(|c| "aeiouAEIOU".contains(c)) { "an" } else { "a" };
@@ -331,5 +354,68 @@ mod tests {
         assert!(fact_lines(&a).iter().all(|(l, _)| *l != "Size potential"));
         a.story.size_potential = Some("about 50 lbs grown".into());
         assert!(fact_lines(&a).contains(&("Size potential", "about 50 lbs grown".to_string())));
+    }
+
+    fn with_species(sp: Species) -> Animal {
+        Animal { species: sp, ..animal(Sex::Female) }
+    }
+
+    #[test]
+    fn posts_use_species_noun() {
+        let t = all_text(&with_species(Species::Donkey), &Settings::default()).join("\n");
+        assert!(t.contains("a donkey") && !t.contains("dog"), "{t}");
+    }
+
+    #[test]
+    fn other_species_blank_kind_says_animal() {
+        let a = with_species(Species::Other);
+        for t in all_text(&a, &Settings::default()) {
+            assert!(!t.contains("Other") && !t.contains("None"), "{t}");
+        }
+        assert!(all_text(&a, &Settings::default())[0].contains("an animal"));
+    }
+
+    #[test]
+    fn an_before_vowel_noun() {
+        let mut a = with_species(Species::Other);
+        a.species_other = Some("Alpaca".into());
+        let t = all_text(&a, &Settings::default()).join("\n");
+        assert!(t.contains("an alpaca") && !t.contains("a alpaca"), "{t}");
+    }
+
+    #[test]
+    fn fact_lines_horse_height_and_poultry_layer() {
+        let mut h = with_species(Species::Horse);
+        h.story.height_hands = Some(14.2);
+        h.story.horns = None;
+        h.story.rideable = YesNoUnknown::No;
+        h.story.layer = YesNoUnknown::Yes;
+        let f = fact_lines(&h);
+        assert!(f.contains(&("Height", "14.2 hands".to_string())));
+        assert!(f.contains(&("Rideable", "No".to_string())));
+        assert!(f.iter().all(|(l, _)| *l != "Lays eggs"), "layer is poultry-only");
+        h.story.height_hands = Some(15.0);
+        assert!(fact_lines(&h).contains(&("Height", "15 hands".to_string())));
+        let mut c = with_species(Species::Chicken);
+        c.story.layer = YesNoUnknown::Yes;
+        c.story.housing = Some(Housing::Outdoor);
+        c.story.good_with_other_animals = YesNoUnknown::Yes;
+        let f = fact_lines(&c);
+        assert!(f.contains(&("Lays eggs", "Yes".to_string())));
+        assert!(f.contains(&("Housing", "Outdoor".to_string())));
+        assert!(f.contains(&("Good with", "other animals".to_string())));
+    }
+
+    #[test]
+    fn house_trained_hidden_for_goat() {
+        let mut g = with_species(Species::Goat);
+        g.story.house_trained = YesNoUnknown::Yes;
+        g.story.horns = Some(Horns::Disbudded);
+        let f = fact_lines(&g);
+        assert!(f.iter().all(|(l, _)| *l != "House-trained"));
+        assert!(f.contains(&("Horns", "Disbudded".to_string())));
+        let mut r = with_species(Species::Rabbit);
+        r.story.house_trained = YesNoUnknown::Yes;
+        assert!(fact_lines(&r).contains(&("House-trained", "Yes".to_string())));
     }
 }

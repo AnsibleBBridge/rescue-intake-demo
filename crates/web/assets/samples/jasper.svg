@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Illustration of a friendly gray donkey with long ears">
+  <rect width="400" height="400" fill="#e4ecf7"/>
+  <circle cx="200" cy="420" r="190" fill="#c3d3ea"/>
+  <ellipse cx="200" cy="320" rx="90" ry="70" fill="#9aa3ad"/>
+  <ellipse cx="135" cy="85" rx="26" ry="85" fill="#8a929c" transform="rotate(-18 135 85)"/>
+  <ellipse cx="265" cy="85" rx="26" ry="85" fill="#8a929c" transform="rotate(18 265 85)"/>
+  <ellipse cx="135" cy="85" rx="12" ry="62" fill="#e8b4b8" transform="rotate(-18 135 85)"/>
+  <ellipse cx="265" cy="85" rx="12" ry="62" fill="#e8b4b8" transform="rotate(18 265 85)"/>
+  <path d="M170 120 q30 -40 60 0 q-5 -10 -30 -10 q-25 0 -30 10 z" fill="#6f7782"/>
+  <ellipse cx="200" cy="185" rx="78" ry="88" fill="#a9b1ba"/>
+  <ellipse cx="200" cy="250" rx="56" ry="46" fill="#f1ede6"/>
+  <circle cx="165" cy="170" r="12" fill="#2b1d16"/>
+  <circle cx="235" cy="170" r="12" fill="#2b1d16"/>
+  <circle cx="169" cy="166" r="4" fill="#fff"/>
+  <circle cx="239" cy="166" r="4" fill="#fff"/>
+  <ellipse cx="180" cy="240" rx="7" ry="9" fill="#6f7782"/>
+  <ellipse cx="220" cy="240" rx="7" ry="9" fill="#6f7782"/>
+  <path d="M200 262 q-16 14 -30 4 M200 262 q16 14 30 4" fill="none" stroke="#2b1d16" stroke-width="5" stroke-linecap="round"/>
+</svg>
