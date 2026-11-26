@@ -31,13 +31,17 @@ struct Pronouns {
     subj: &'static str,
     obj: &'static str,
     poss: &'static str,
+    // Verb forms that must agree with the subject (they are / she is).
+    is: &'static str,
+    deserves: &'static str,
+    gets: &'static str,
 }
 
 fn pronouns(sex: Sex) -> Pronouns {
     match sex {
-        Sex::Male => Pronouns { subj: "he", obj: "him", poss: "his" },
-        Sex::Female => Pronouns { subj: "she", obj: "her", poss: "her" },
-        Sex::Unknown => Pronouns { subj: "they", obj: "them", poss: "their" },
+        Sex::Male => Pronouns { subj: "he", obj: "him", poss: "his", is: "is", deserves: "deserves", gets: "gets" },
+        Sex::Female => Pronouns { subj: "she", obj: "her", poss: "her", is: "is", deserves: "deserves", gets: "gets" },
+        Sex::Unknown => Pronouns { subj: "they", obj: "them", poss: "their", is: "are", deserves: "deserve", gets: "get" },
     }
 }
 
@@ -163,7 +167,7 @@ fn details(animal: &Animal, p: &Pronouns) -> Vec<String> {
         v.push(if pers.ends_with(['.', '!', '?']) { pers.to_string() } else { format!("{pers}.") });
     }
     if let Some((_, g)) = fact_lines(animal).into_iter().find(|(l, _)| *l == "Good with") {
-        v.push(format!("{} gets along great with {g}.", cap(p.subj)));
+        v.push(format!("{} {} along great with {g}.", cap(p.subj), p.gets));
     }
     if let Some(n) = text(&s.special_needs) {
         v.push(format!("Special note: {n}"));
@@ -189,7 +193,7 @@ pub fn generate_posts(animal: &Animal, settings: &Settings) -> Vec<Post> {
     ]);
 
     let heartfelt = blocks(vec![
-        format!("{name} has been waiting patiently for someone to say \"you're home.\" {} is {kind}, and {} deserves a family to love {}.", cap(p.subj), p.subj, p.obj),
+        format!("{name} has been waiting patiently for someone to say \"you're home.\" {} {} {kind}, and {} {} a family to love {}.", cap(p.subj), p.is, p.subj, p.deserves, p.obj),
         det,
         fee.unwrap_or_default(),
         format!("If {name} could be part of your story, we would love to hear from you."),
@@ -287,14 +291,23 @@ mod tests {
 
     #[test]
     fn female_uses_she() {
-        let t = all_text(&animal(Sex::Female), &Settings::default()).join("\n");
+        let mut a = animal(Sex::Female);
+        a.story.good_with_dogs = YesNoUnknown::Yes;
+        let t = all_text(&a, &Settings::default()).join("\n");
         assert!(t.contains(" her ") && !t.contains(" they "), "{t}");
+        assert!(t.contains("She is") && t.contains("she deserves") && t.contains("She gets"), "{t}");
     }
 
     #[test]
     fn unknown_sex_uses_they() {
-        let t = all_text(&animal(Sex::Unknown), &Settings::default()).join("\n");
+        let mut a = animal(Sex::Unknown);
+        a.story.good_with_dogs = YesNoUnknown::Yes;
+        let t = all_text(&a, &Settings::default()).join("\n");
         assert!(t.contains(" their ") && !t.contains(" his ") && !t.contains(" her "), "{t}");
+        for bad in ["They is", "they is", "they deserves", "They gets", "they gets"] {
+            assert!(!t.contains(bad), "{bad:?} in {t}");
+        }
+        assert!(t.contains("They are") && t.contains("they deserve") && t.contains("They get "), "{t}");
     }
 
     #[test]
