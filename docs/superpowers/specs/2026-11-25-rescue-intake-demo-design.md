@@ -149,3 +149,9 @@ animal content, routing approach, and the share-image layout.
 
 Rust server on Proxmox via Cloudflare Tunnel or Tailscale Funnel; shared data + real login;
 in-app feedback notes committed to the repo; drawing/markup.
+
+**Exports (Bryan, 2026-11-25 — "eventually"):** spreadsheet export (CSV/XLSX of animals and
+their acquisition/disposition records) and PDF reports / printable records (e.g. a per-animal
+record covering 010.04A, 010.06, 010.05A — the paperwork an NDA inspector would ask for — and
+roster/period reports). Design implication for now: keep all record data structured in
+`rescue-core` (no free-text blobs) so export functions are pure Rust over `StoreData`.
