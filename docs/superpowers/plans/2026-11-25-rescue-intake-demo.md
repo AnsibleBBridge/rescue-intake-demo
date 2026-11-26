@@ -164,7 +164,14 @@ Profile shows photo, details, status stepper (clickable pills; changing status s
 
 **Files:** Create `src/pages/fact_sheet.rs`; add `@media print` rules to `style.css`
 
-Layout: rescue name header, large photo (or species placeholder SVG), name, `fact_lines` as a two-column list, personality paragraph, special needs, fee, contact block, "Print" button (`window.print()`). Print CSS hides header/banner/footer/buttons; Letter, one page.
+Layout follows the rescue's reference `docs/reference/fact-sheet-reference.jpg` (look at it), in our own styling — do not copy the template's artwork: soft pastel palette, rounded cards.
+- Title band: "Pet Profile" + rescue name.
+- Row: **Overview** card (label/value list from `fact_lines`, plus Sex, Weight, Size potential) beside a **large circular photo** (`border-radius:50%; object-fit:cover`; species placeholder SVG if none) with the animal's name on a ribbon/banner overlapping the bottom of the circle.
+- **Background** card: personality paragraph, good-with notes, special needs, fee.
+- **No "Fun Facts" section** (the rescue crossed it out).
+- Full-width footer band: "Interested in adopting? Call {phone} · {email}" (empty parts dropped).
+- "Print" button (`window.print()`). Print CSS hides header/banner/footer/buttons; Letter, one page; keep background colors (`print-color-adjust: exact`).
+- Model change in this task: add `size_potential: Option<String>` to `Story` (with `#[serde(default)]`), show it on the intake/edit form (Story section) and in `fact_lines` as `("Size potential", …)`; update core tests accordingly.
 
 - [ ] **Step 1:** Browser check: Biscuit sheet renders; print-to-PDF via Playwright `page.pdf({format:'Letter'})` produces exactly 1 page; sparse animal shows no empty rows.
 - [ ] **Step 2:** Commit `feat(web): printable fact sheet`.
@@ -173,7 +180,7 @@ Layout: rescue name header, large photo (or species placeholder SVG), name, `fac
 
 **Files:** Create `src/pages/posts.rs`, `src/share_image.rs`
 
-**Interfaces — Produces:** `share_image::render(canvas: &HtmlCanvasElement, animal: &Animal, settings: &Settings) -> Result<(), String>` — 1080×1080: photo cover-cropped top 70%, bottom band with name (large), up to 3 `fact_lines`, rescue name; placeholder background when no photo.
+**Interfaces — Produces:** `share_image::render(canvas: &HtmlCanvasElement, animal: &Animal, settings: &Settings) -> Result<(), String>` — 1080×1080 in the same visual family as the fact sheet (pastel background, circular photo, name ribbon, up to 3 `fact_lines`, footer band with rescue name + phone); placeholder art when no photo.
 
 Page: one card per `generate_posts` tone with textarea (editable) + "Copy" (Clipboard API; fallback select-all + message), canvas preview, "Download image" (`toDataURL("image/png")` → `<a download="{name}-adopt-me.png">`).
 
