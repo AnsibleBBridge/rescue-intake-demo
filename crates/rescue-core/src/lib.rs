@@ -2,3 +2,4 @@
 pub mod model;
 pub mod store_data;
 pub mod compliance;
+pub mod posts;
